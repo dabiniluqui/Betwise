@@ -1,0 +1,252 @@
+openapi: 3.0.0
+info:
+  title: BetWise Argentina API
+  version: 1.0.0
+  description: |
+    API REST de BetWise Argentina. Provee partidos en vivo, Pulse Score,
+    salud financiera y gestión de usuarios.
+  contact:
+    name: Equipo BetWise
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Desarrollo local
+  - url: https://betwise-api.onrender.com/api/v1
+    description: Producción (Render)
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Usuario:
+      type: object
+      properties:
+        id:        { type: string, format: uuid }
+        email:     { type: string, format: email }
+        nombre:    { type: string }
+        created_at: { type: string, format: date-time }
+
+    PerfilFinanciero:
+      type: object
+      properties:
+        sueldo_neto:           { type: number }
+        gasto_alquiler:        { type: number }
+        gasto_servicios:       { type: number }
+        gasto_transporte:      { type: number }
+        gasto_cuotas:          { type: number }
+        gasto_alimentacion:    { type: number }
+        gasto_entretenimiento: { type: number }
+        gasto_otros:           { type: number }
+        nivel_ahorro:
+          type: string
+          enum: [bajo_5, moderado_10, recomendado_20, alto_30, agresivo_50]
+
+    ResultadoFinanciero:
+      type: object
+      properties:
+        sueldo_neto:      { type: number }
+        gastos_fijos:     { type: number }
+        gastos_variables: { type: number }
+        ahorro_meta:      { type: number }
+        disponible:       { type: number }
+        limite_apuestas:  { type: number }
+        indice_salud:     { type: number }
+        estado_salud:     { type: string, enum: [Excelente, Bueno, Regular, Crítico] }
+
+paths:
+  # ── AUTH ──────────────────────────────────────────────────
+  /auth/register:
+    post:
+      tags: [Autenticación]
+      summary: Registrar nuevo usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:    { type: string, format: email }
+                password: { type: string, minLength: 6 }
+                nombre:   { type: string }
+      responses:
+        '201':
+          description: Usuario creado exitosamente
+        '409':
+          description: Email ya registrado
+
+  /auth/login:
+    post:
+      tags: [Autenticación]
+      summary: Iniciar sesión
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:    { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Login exitoso, devuelve JWT
+        '401':
+          description: Credenciales inválidas
+
+  /auth/me:
+    get:
+      tags: [Autenticación]
+      summary: Obtener datos del usuario autenticado
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200':
+          description: Datos del usuario
+        '401':
+          description: Token requerido
+
+  # ── PARTIDOS ──────────────────────────────────────────────
+  /partidos/en-vivo:
+    get:
+      tags: [Partidos]
+      summary: Obtener todos los partidos en vivo
+      description: Devuelve partidos live de las 6 ligas configuradas. Cache de 60s.
+      responses:
+        '200':
+          description: Lista de partidos en vivo
+
+  /partidos/{id}/pulse:
+    get:
+      tags: [Partidos]
+      summary: Obtener Pulse Score de un partido
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+          description: ID del fixture (API-Football)
+      responses:
+        '200':
+          description: Pulse Score local y visitante (0-100)
+
+  # ── FINANZAS ──────────────────────────────────────────────
+  /finanzas/calcular:
+    post:
+      tags: [Salud Financiera]
+      summary: Calcular salud financiera (sin login requerido)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PerfilFinanciero' }
+      responses:
+        '200':
+          description: Resultado financiero calculado
+
+  /finanzas/perfil:
+    get:
+      tags: [Salud Financiera]
+      summary: Obtener perfil financiero guardado
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200':
+          description: Perfil financiero del usuario
+    post:
+      tags: [Salud Financiera]
+      summary: Guardar o actualizar perfil financiero
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PerfilFinanciero' }
+      responses:
+        '200':
+          description: Perfil guardado con resultado calculado
+
+  /finanzas/registro/{anio}/{mes}:
+    get:
+      tags: [Salud Financiera]
+      summary: Obtener registro mensual de gastos
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: anio
+          required: true
+          schema: { type: integer }
+        - in: path
+          name: mes
+          required: true
+          schema: { type: integer, minimum: 1, maximum: 12 }
+      responses:
+        '200':
+          description: Registro mensual con progreso
+
+  /finanzas/registro/entrada:
+    post:
+      tags: [Salud Financiera]
+      summary: Agregar entrada de gasto al mes actual
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [monto, descripcion]
+              properties:
+                monto:       { type: number, minimum: 0.01 }
+                descripcion: { type: string }
+      responses:
+        '201':
+          description: Entrada registrada con progreso actualizado
+
+  # ── FAVORITOS ─────────────────────────────────────────────
+  /favoritos:
+    get:
+      tags: [Favoritos]
+      summary: Obtener favoritos del usuario
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200':
+          description: Lista de partidos favoritos
+    post:
+      tags: [Favoritos]
+      summary: Agregar partido a favoritos
+      security: [{ BearerAuth: [] }]
+      responses:
+        '201':
+          description: Favorito agregado
+
+  /favoritos/{id}:
+    delete:
+      tags: [Favoritos]
+      summary: Eliminar un favorito
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Favorito eliminado
+
+  # ── SCRAPING ──────────────────────────────────────────────
+  /scraping/noticias:
+    get:
+      tags: [Scraping]
+      summary: Obtener noticias de TyC Sports
+      description: Scrapea noticias de fútbol. Cache de 10 minutos.
+      parameters:
+        - in: query
+          name: limite
+          schema: { type: integer, default: 10, maximum: 30 }
+      responses:
+        '200':
+          description: Lista de noticias scrapeadas

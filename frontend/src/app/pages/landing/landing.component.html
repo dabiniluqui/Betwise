@@ -1,0 +1,380 @@
+<!-- ============================================================
+     landing.component.html
+     Orden: 1) Salud Financiera  2) Partidos en vivo  3) Noticias
+============================================================ -->
+
+<!-- ══════════════════════════════════════════════════════════
+     HERO BAND
+══════════════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero__contenido">
+    <span class="etiqueta-pill">⚡ Live Stats · Sin cuotas · Sin trampa</span>
+    <h1 class="hero__titulo">
+      Fútbol en vivo.<br>
+      <span class="hero__titulo--acento">Finanzas bajo control.</span>
+    </h1>
+    <p class="hero__subtitulo">
+      Seguí los partidos que más te gustan con análisis de momentum en tiempo real
+      y calculá cuánto podés destinar a apuestas sin comprometer tu economía.
+    </p>
+    <div class="hero__acciones">
+      <a href="#calculadora" class="btn btn--primario btn--grande">Calculá tu límite</a>
+      <a href="#partidos"    class="btn btn--ghost    btn--grande">Ver partidos en vivo</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SECCIÓN 1 — SALUD FINANCIERA (arriba de todo)
+══════════════════════════════════════════════════════════ -->
+<section id="calculadora" class="seccion seccion--oscura">
+  <div class="contenedor">
+
+    <header class="seccion__encabezado">
+      <span class="etiqueta-pill etiqueta-pill--verde">💰 Salud Financiera</span>
+      <h2 class="seccion__titulo">Calculadora de límite responsable</h2>
+      <p class="seccion__descripcion">
+        Ingresá tus datos mensuales y te calculamos cuánto podés destinar a apuestas
+        sin poner en riesgo tu estabilidad económica.
+        <span *ngIf="authService.estaLogueado()">
+          Tu perfil se guarda automáticamente en tu cuenta.
+        </span>
+      </p>
+    </header>
+
+    <div class="calculadora-grid">
+
+      <!-- COLUMNA IZQUIERDA: Formulario -->
+      <div class="card" id="tarjeta-formulario">
+        <form [formGroup]="formularioFinanciero"
+              (ngSubmit)="calcularSalud()"
+              novalidate>
+
+          <!-- Ingresos -->
+          <fieldset class="fieldset">
+            <legend class="fieldset__legend">Ingresos</legend>
+            <div class="campo-grupo">
+              <label class="campo-label" for="sueldo_neto">Sueldo neto mensual *</label>
+              <div class="campo-input-wrap">
+                <span class="campo-prefijo">$</span>
+                <input
+                  id="sueldo_neto"
+                  type="number"
+                  class="campo-input"
+                  formControlName="sueldo_neto"
+                  placeholder="Ej: 350000"
+                  min="0" />
+              </div>
+              <span class="campo-error"
+                    *ngIf="formularioFinanciero.get('sueldo_neto')?.invalid &&
+                           formularioFinanciero.get('sueldo_neto')?.touched">
+                El sueldo es requerido y debe ser mayor a 0
+              </span>
+            </div>
+          </fieldset>
+
+          <!-- Gastos fijos -->
+          <fieldset class="fieldset">
+            <legend class="fieldset__legend">Gastos fijos</legend>
+            <div class="campo-doble">
+              <div class="campo-grupo">
+                <label class="campo-label" for="gasto_alquiler">Alquiler / Expensas</label>
+                <div class="campo-input-wrap">
+                  <span class="campo-prefijo">$</span>
+                  <input id="gasto_alquiler" type="number" class="campo-input"
+                         formControlName="gasto_alquiler" placeholder="0" min="0" />
+                </div>
+              </div>
+              <div class="campo-grupo">
+                <label class="campo-label" for="gasto_servicios">Servicios del hogar</label>
+                <div class="campo-input-wrap">
+                  <span class="campo-prefijo">$</span>
+                  <input id="gasto_servicios" type="number" class="campo-input"
+                         formControlName="gasto_servicios" placeholder="0" min="0" />
+                </div>
+              </div>
+              <div class="campo-grupo">
+                <label class="campo-label" for="gasto_transporte">Transporte</label>
+                <div class="campo-input-wrap">
+                  <span class="campo-prefijo">$</span>
+                  <input id="gasto_transporte" type="number" class="campo-input"
+                         formControlName="gasto_transporte" placeholder="0" min="0" />
+                </div>
+              </div>
+              <div class="campo-grupo">
+                <label class="campo-label" for="gasto_cuotas">Cuotas / Créditos</label>
+                <div class="campo-input-wrap">
+                  <span class="campo-prefijo">$</span>
+                  <input id="gasto_cuotas" type="number" class="campo-input"
+                         formControlName="gasto_cuotas" placeholder="0" min="0" />
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Gastos variables -->
+          <fieldset class="fieldset">
+            <legend class="fieldset__legend">Gastos variables estimados</legend>
+            <div class="campo-doble">
+              <div class="campo-grupo">
+                <label class="campo-label" for="gasto_alimentacion">Alimentación</label>
+                <div class="campo-input-wrap">
+                  <span class="campo-prefijo">$</span>
+                  <input id="gasto_alimentacion" type="number" class="campo-input"
+                         formControlName="gasto_alimentacion" placeholder="0" min="0" />
+                </div>
+              </div>
+              <div class="campo-grupo">
+                <label class="campo-label" for="gasto_entretenimiento">Entretenimiento</label>
+                <div class="campo-input-wrap">
+                  <span class="campo-prefijo">$</span>
+                  <input id="gasto_entretenimiento" type="number" class="campo-input"
+                         formControlName="gasto_entretenimiento" placeholder="0" min="0" />
+                </div>
+              </div>
+              <div class="campo-grupo campo-grupo--completo">
+                <label class="campo-label" for="gasto_otros">Otros gastos</label>
+                <div class="campo-input-wrap">
+                  <span class="campo-prefijo">$</span>
+                  <input id="gasto_otros" type="number" class="campo-input"
+                         formControlName="gasto_otros" placeholder="0" min="0" />
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Nivel de ahorro -->
+          <div class="campo-grupo">
+            <label class="campo-label" for="nivel_ahorro">Meta de ahorro mensual</label>
+            <select id="nivel_ahorro" class="campo-select" formControlName="nivel_ahorro">
+              <option value="bajo_5">Bajo — hasta el 5%</option>
+              <option value="moderado_10">Moderado — 10%</option>
+              <option value="recomendado_20">Recomendado — 20% ✓</option>
+              <option value="alto_30">Alto — 30%</option>
+              <option value="agresivo_50">Agresivo — 50%</option>
+            </select>
+            <span class="campo-ayuda">Los expertos recomiendan ahorrar al menos el 20%</span>
+          </div>
+
+          <!-- Error general -->
+          <p class="mensaje-error" *ngIf="errorFinanzas()">{{ errorFinanzas() }}</p>
+
+          <!-- Acciones del formulario -->
+          <div class="form-acciones">
+            <button
+              type="submit"
+              class="btn btn--primario btn--completo"
+              [disabled]="calculandoFinanzas() || formularioFinanciero.invalid">
+              {{ calculandoFinanzas() ? 'Calculando...' : 'Calcular mi límite seguro →' }}
+            </button>
+            <button type="button" class="btn btn--ghost btn--completo"
+                    (click)="resetearCalculadora()" *ngIf="resultadoFinanciero()">
+              Reiniciar
+            </button>
+          </div>
+
+        </form>
+      </div>
+      <!-- /tarjeta-formulario -->
+
+      <!-- COLUMNA DERECHA: Resultados -->
+      <div class="resultados-col">
+
+        <!-- Estado vacío -->
+        <div class="resultado-vacio" *ngIf="!resultadoFinanciero()">
+          <div class="resultado-vacio__icono">💡</div>
+          <p class="resultado-vacio__texto">
+            Completá el formulario y te mostraremos tu análisis financiero personalizado.
+          </p>
+        </div>
+
+        <!-- Resultados calculados -->
+        <ng-container *ngIf="resultadoFinanciero() as r">
+
+          <!-- Badge de salud -->
+          <div class="badge-salud" [ngClass]="colorEstado(r.estado_salud)">
+            <span class="badge-salud__etiqueta">Índice de salud financiera</span>
+            <span class="badge-salud__valor">{{ r.indice_salud }}%</span>
+            <span class="badge-salud__estado">{{ r.estado_salud }}</span>
+          </div>
+
+          <!-- Barra de índice -->
+          <div class="barra-salud">
+            <div class="barra-salud__relleno"
+                 [style.width.%]="r.indice_salud"
+                 [ngClass]="colorEstado(r.estado_salud)">
+            </div>
+          </div>
+
+          <!-- Grilla de métricas -->
+          <div class="metricas-grid">
+            <div class="metrica-item">
+              <span class="metrica-item__etiqueta">Sueldo neto</span>
+              <span class="metrica-item__valor">{{ formatearPeso(r.sueldo_neto) }}</span>
+            </div>
+            <div class="metrica-item metrica-item--negativo">
+              <span class="metrica-item__etiqueta">Gastos fijos</span>
+              <span class="metrica-item__valor">{{ formatearPeso(r.gastos_fijos) }}</span>
+            </div>
+            <div class="metrica-item metrica-item--negativo">
+              <span class="metrica-item__etiqueta">Gastos variables</span>
+              <span class="metrica-item__valor">{{ formatearPeso(r.gastos_variables) }}</span>
+            </div>
+            <div class="metrica-item metrica-item--neutro">
+              <span class="metrica-item__etiqueta">Ahorro meta ({{ r.nivel_ahorro_pct }}%)</span>
+              <span class="metrica-item__valor">{{ formatearPeso(r.ahorro_meta) }}</span>
+            </div>
+            <div class="metrica-item metrica-item--disponible">
+              <span class="metrica-item__etiqueta">Ingreso disponible</span>
+              <span class="metrica-item__valor">{{ formatearPeso(r.disponible) }}</span>
+            </div>
+          </div>
+
+          <!-- Límite destacado -->
+          <div class="limite-card">
+            <p class="limite-card__etiqueta">🎯 Límite mensual seguro para apuestas</p>
+            <p class="limite-card__monto">{{ formatearPeso(r.limite_apuestas) }}</p>
+            <p class="limite-card__descripcion">
+              Equivale al 5% de tu ingreso disponible luego de cubrir todos tus gastos y tu meta de ahorro.
+            </p>
+            <a routerLink="/salud-financiera" class="btn btn--primario btn--completo"
+               *ngIf="authService.estaLogueado()">
+              Guardar perfil y llevar registro →
+            </a>
+            <a routerLink="/register" class="btn btn--ghost btn--completo"
+               *ngIf="!authService.estaLogueado()">
+              Registrate para guardar tu perfil y llevar registro mensual
+            </a>
+          </div>
+
+        </ng-container>
+      </div>
+      <!-- /resultados-col -->
+
+    </div>
+    <!-- /calculadora-grid -->
+
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SECCIÓN 2 — PARTIDOS EN VIVO
+══════════════════════════════════════════════════════════ -->
+<section id="partidos" class="seccion">
+  <div class="contenedor">
+
+    <header class="seccion__encabezado">
+      <span class="etiqueta-pill">⚽ En Vivo</span>
+      <h2 class="seccion__titulo">Partidos en vivo</h2>
+      <p class="seccion__descripcion" *ngIf="ultimaActualizacion()">
+        Actualizado a las {{ ultimaActualizacion() }} · Se actualiza automáticamente vía WebSocket
+      </p>
+    </header>
+
+    <!-- Cargando -->
+    <div class="estado-carga" *ngIf="cargandoPartidos()">
+      <div class="spinner"></div>
+      <p>Cargando partidos en vivo...</p>
+    </div>
+
+    <!-- Sin partidos -->
+    <div class="estado-vacio" *ngIf="!cargandoPartidos() && partidos().length === 0">
+      <p class="estado-vacio__icono">🏟️</p>
+      <p class="estado-vacio__texto">No hay partidos en vivo en este momento.</p>
+      <p class="estado-vacio__subtexto">Volvé más tarde o seguí una liga para recibir notificaciones.</p>
+    </div>
+
+    <!-- Grid de partidos -->
+    <div class="partidos-grid" *ngIf="!cargandoPartidos() && partidos().length > 0">
+      <article class="partido-card" *ngFor="let p of partidos()">
+
+        <!-- Header: liga -->
+        <div class="partido-card__liga">
+          <img [src]="p.liga.logo" [alt]="p.liga.nombre" class="partido-card__liga-logo"
+               onerror="this.style.display='none'" />
+          <span class="partido-card__liga-nombre">{{ p.liga.nombre }}</span>
+          <span class="partido-card__liga-pais">{{ p.liga.pais }}</span>
+        </div>
+
+        <!-- Marcador -->
+        <div class="partido-card__marcador">
+          <div class="partido-card__equipo">
+            <img [src]="p.equipoLocal.logo" [alt]="p.equipoLocal.nombre"
+                 class="partido-card__escudo" onerror="this.style.display='none'" />
+            <span class="partido-card__equipo-nombre">{{ p.equipoLocal.nombre }}</span>
+          </div>
+
+          <div class="partido-card__resultado">
+            <span class="partido-card__goles">
+              {{ p.equipoLocal.goles ?? '-' }} : {{ p.equipoVisitante.goles ?? '-' }}
+            </span>
+            <span class="partido-card__minuto badge-live">
+              {{ p.minuto ? p.minuto + "'" : p.estado }}
+            </span>
+          </div>
+
+          <div class="partido-card__equipo partido-card__equipo--visitante">
+            <img [src]="p.equipoVisitante.logo" [alt]="p.equipoVisitante.nombre"
+                 class="partido-card__escudo" onerror="this.style.display='none'" />
+            <span class="partido-card__equipo-nombre">{{ p.equipoVisitante.nombre }}</span>
+          </div>
+        </div>
+
+        <!-- Footer: acciones -->
+        <div class="partido-card__footer">
+          <a [routerLink]="['/dashboard']" class="btn btn--ghost btn--pequeño">
+            Ver Pulse Score ⚡
+          </a>
+        </div>
+
+      </article>
+    </div>
+    <!-- /partidos-grid -->
+
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SECCIÓN 3 — NOTICIAS (TyC Sports scraping)
+══════════════════════════════════════════════════════════ -->
+<section id="noticias" class="seccion seccion--oscura">
+  <div class="contenedor">
+
+    <header class="seccion__encabezado">
+      <span class="etiqueta-pill">📰 Noticias</span>
+      <h2 class="seccion__titulo">Últimas noticias de fútbol</h2>
+      <p class="seccion__descripcion">Fuente: TyC Sports</p>
+    </header>
+
+    <!-- Cargando -->
+    <div class="estado-carga" *ngIf="cargandoNoticias()">
+      <div class="spinner"></div>
+      <p>Cargando noticias...</p>
+    </div>
+
+    <!-- Grid de noticias -->
+    <div class="noticias-grid" *ngIf="!cargandoNoticias()">
+      <a class="noticia-card"
+         *ngFor="let n of noticias()"
+         [href]="n.url"
+         target="_blank"
+         rel="noopener noreferrer">
+        <div class="noticia-card__imagen-wrap">
+          <img *ngIf="n.imagen" [src]="n.imagen" [alt]="n.titulo"
+               class="noticia-card__imagen" loading="lazy"
+               onerror="this.parentElement.style.display='none'" />
+          <div *ngIf="!n.imagen" class="noticia-card__imagen-placeholder">📰</div>
+        </div>
+        <div class="noticia-card__contenido">
+          <span class="noticia-card__fuente">{{ n.fuente }}</span>
+          <h3 class="noticia-card__titulo">{{ n.titulo }}</h3>
+          <span class="noticia-card__fecha" *ngIf="n.fecha">{{ n.fecha }}</span>
+        </div>
+      </a>
+    </div>
+
+  </div>
+</section>

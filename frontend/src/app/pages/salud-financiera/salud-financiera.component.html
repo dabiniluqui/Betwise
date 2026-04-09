@@ -1,0 +1,250 @@
+<!-- ============================================================
+     salud-financiera.component.html
+     Panel completo: perfil financiero + registro mensual
+============================================================ -->
+
+<div class="sf-wrapper">
+  <div class="contenedor">
+
+    <!-- Título de la página -->
+    <header class="sf-header">
+      <span class="etiqueta-pill etiqueta-pill--verde">💰 Mi Salud Financiera</span>
+      <h1 class="sf-header__titulo">Control financiero personal</h1>
+      <p class="sf-header__descripcion">
+        Guardá tu perfil económico y llevá el registro de cuánto destinás a apuestas cada mes.
+      </p>
+    </header>
+
+    <!-- ── LAYOUT PRINCIPAL ─────────────────────────────── -->
+    <div class="sf-grid">
+
+      <!-- COLUMNA 1: Formulario de perfil -->
+      <section class="card" aria-labelledby="titulo-perfil">
+        <h2 id="titulo-perfil" class="card__titulo">Mi perfil financiero</h2>
+
+        <form [formGroup]="formPerfil" (ngSubmit)="guardarPerfil()" novalidate>
+
+          <div class="campo-grupo">
+            <label class="campo-label" for="sf-sueldo">Sueldo neto mensual *</label>
+            <div class="campo-input-wrap">
+              <span class="campo-prefijo">$</span>
+              <input id="sf-sueldo" type="number" class="campo-input"
+                     formControlName="sueldo_neto" placeholder="Ej: 350000" min="0" />
+            </div>
+          </div>
+
+          <p class="seccion-label">Gastos fijos</p>
+          <div class="campo-doble">
+            <div class="campo-grupo">
+              <label class="campo-label" for="sf-alquiler">Alquiler</label>
+              <div class="campo-input-wrap">
+                <span class="campo-prefijo">$</span>
+                <input id="sf-alquiler" type="number" class="campo-input"
+                       formControlName="gasto_alquiler" placeholder="0" min="0" />
+              </div>
+            </div>
+            <div class="campo-grupo">
+              <label class="campo-label" for="sf-servicios">Servicios</label>
+              <div class="campo-input-wrap">
+                <span class="campo-prefijo">$</span>
+                <input id="sf-servicios" type="number" class="campo-input"
+                       formControlName="gasto_servicios" placeholder="0" min="0" />
+              </div>
+            </div>
+            <div class="campo-grupo">
+              <label class="campo-label" for="sf-transporte">Transporte</label>
+              <div class="campo-input-wrap">
+                <span class="campo-prefijo">$</span>
+                <input id="sf-transporte" type="number" class="campo-input"
+                       formControlName="gasto_transporte" placeholder="0" min="0" />
+              </div>
+            </div>
+            <div class="campo-grupo">
+              <label class="campo-label" for="sf-cuotas">Cuotas / créditos</label>
+              <div class="campo-input-wrap">
+                <span class="campo-prefijo">$</span>
+                <input id="sf-cuotas" type="number" class="campo-input"
+                       formControlName="gasto_cuotas" placeholder="0" min="0" />
+              </div>
+            </div>
+          </div>
+
+          <p class="seccion-label">Gastos variables</p>
+          <div class="campo-doble">
+            <div class="campo-grupo">
+              <label class="campo-label" for="sf-alim">Alimentación</label>
+              <div class="campo-input-wrap">
+                <span class="campo-prefijo">$</span>
+                <input id="sf-alim" type="number" class="campo-input"
+                       formControlName="gasto_alimentacion" placeholder="0" min="0" />
+              </div>
+            </div>
+            <div class="campo-grupo">
+              <label class="campo-label" for="sf-entr">Entretenimiento</label>
+              <div class="campo-input-wrap">
+                <span class="campo-prefijo">$</span>
+                <input id="sf-entr" type="number" class="campo-input"
+                       formControlName="gasto_entretenimiento" placeholder="0" min="0" />
+              </div>
+            </div>
+            <div class="campo-grupo campo-grupo--completo">
+              <label class="campo-label" for="sf-otros">Otros</label>
+              <div class="campo-input-wrap">
+                <span class="campo-prefijo">$</span>
+                <input id="sf-otros" type="number" class="campo-input"
+                       formControlName="gasto_otros" placeholder="0" min="0" />
+              </div>
+            </div>
+          </div>
+
+          <div class="campo-grupo">
+            <label class="campo-label" for="sf-ahorro">Meta de ahorro</label>
+            <select id="sf-ahorro" class="campo-select" formControlName="nivel_ahorro">
+              <option value="bajo_5">Bajo — 5%</option>
+              <option value="moderado_10">Moderado — 10%</option>
+              <option value="recomendado_20">Recomendado — 20% ✓</option>
+              <option value="alto_30">Alto — 30%</option>
+              <option value="agresivo_50">Agresivo — 50%</option>
+            </select>
+          </div>
+
+          <p class="mensaje-exito" *ngIf="perfilGuardado()">✅ Perfil guardado correctamente</p>
+          <p class="mensaje-error" *ngIf="errorPerfil()">{{ errorPerfil() }}</p>
+
+          <button type="submit" class="btn btn--primario btn--completo"
+                  [disabled]="guardandoPerfil() || formPerfil.invalid">
+            {{ guardandoPerfil() ? 'Guardando...' : 'Guardar perfil →' }}
+          </button>
+        </form>
+      </section>
+
+      <!-- COLUMNA 2: Resultado + Registro mensual -->
+      <div class="sf-columna-derecha">
+
+        <!-- Resultado calculado -->
+        <section class="card" *ngIf="resultado() as r" aria-labelledby="titulo-resultado">
+          <h2 id="titulo-resultado" class="card__titulo">Resumen financiero</h2>
+
+          <div class="limite-destacado">
+            <p class="limite-destacado__etiqueta">🎯 Límite mensual para apuestas</p>
+            <p class="limite-destacado__monto">{{ formatearPeso(r.limite_apuestas) }}</p>
+            <p class="limite-destacado__descripcion">
+              Índice de salud: <strong>{{ r.indice_salud }}%</strong> — {{ r.estado_salud }}
+            </p>
+          </div>
+
+          <div class="desglose">
+            <div class="desglose__fila">
+              <span>Sueldo neto</span>
+              <span class="desglose__valor">{{ formatearPeso(r.sueldo_neto) }}</span>
+            </div>
+            <div class="desglose__fila desglose__fila--negativo">
+              <span>Gastos fijos</span>
+              <span class="desglose__valor">- {{ formatearPeso(r.gastos_fijos) }}</span>
+            </div>
+            <div class="desglose__fila desglose__fila--negativo">
+              <span>Gastos variables</span>
+              <span class="desglose__valor">- {{ formatearPeso(r.gastos_variables) }}</span>
+            </div>
+            <div class="desglose__fila desglose__fila--neutro">
+              <span>Ahorro meta ({{ r.nivel_ahorro_pct }}%)</span>
+              <span class="desglose__valor">- {{ formatearPeso(r.ahorro_meta) }}</span>
+            </div>
+            <div class="desglose__separador"></div>
+            <div class="desglose__fila desglose__fila--positivo">
+              <span>Disponible</span>
+              <span class="desglose__valor">{{ formatearPeso(r.disponible) }}</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Registro mensual -->
+        <section class="card" aria-labelledby="titulo-registro">
+          <h2 id="titulo-registro" class="card__titulo">
+            Registro de {{ nombreMes | titlecase }}
+          </h2>
+
+          <!-- Barra de progreso mensual -->
+          <ng-container *ngIf="progreso() as p">
+            <div class="progreso-mensual" [ngClass]="colorAlerta(p.alerta)">
+              <p class="progreso-mensual__alerta">{{ mensajeAlerta(p.alerta) }}</p>
+
+              <div class="progreso-mensual__numeros">
+                <span class="progreso-mensual__usado">{{ formatearPeso(p.total_registrado) }}</span>
+                <span class="progreso-mensual__separador">de</span>
+                <span class="progreso-mensual__limite">{{ formatearPeso(p.limite_calculado) }}</span>
+              </div>
+
+              <div class="progreso-barra">
+                <div class="progreso-barra__relleno"
+                     [style.width.%]="p.porcentaje_usado"
+                     [ngClass]="colorAlerta(p.alerta)">
+                </div>
+              </div>
+
+              <div class="progreso-mensual__detalle">
+                <span>{{ p.porcentaje_usado }}% usado</span>
+                <span>Restante: {{ formatearPeso(p.restante) }}</span>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- Sin registro aún -->
+          <p class="sin-registro" *ngIf="!progreso() && !cargandoRegistro()">
+            Aún no registraste gastos este mes. Guardá tu perfil primero.
+          </p>
+
+          <!-- Formulario para agregar entrada -->
+          <div class="nueva-entrada" *ngIf="resultado()">
+            <h3 class="nueva-entrada__titulo">Registrar gasto</h3>
+            <form [formGroup]="formEntrada" (ngSubmit)="agregarEntrada()" novalidate>
+              <div class="campo-doble">
+                <div class="campo-grupo">
+                  <label class="campo-label" for="entrada-monto">Monto</label>
+                  <div class="campo-input-wrap">
+                    <span class="campo-prefijo">$</span>
+                    <input id="entrada-monto" type="number" class="campo-input"
+                           formControlName="monto" placeholder="Ej: 1000" min="0.01" step="0.01" />
+                  </div>
+                </div>
+                <div class="campo-grupo">
+                  <label class="campo-label" for="entrada-desc">Descripción</label>
+                  <input id="entrada-desc" type="text" class="campo-input"
+                         formControlName="descripcion" placeholder="Ej: Partido River" />
+                </div>
+              </div>
+
+              <p class="mensaje-exito" *ngIf="entradaExitosa()">✅ Gasto registrado</p>
+              <p class="mensaje-error" *ngIf="errorEntrada()">{{ errorEntrada() }}</p>
+
+              <button type="submit" class="btn btn--primario btn--completo"
+                      [disabled]="agregandoEntrada() || formEntrada.invalid">
+                {{ agregandoEntrada() ? 'Registrando...' : '+ Agregar gasto' }}
+              </button>
+            </form>
+          </div>
+
+          <!-- Historial de entradas del mes -->
+          <div class="historial" *ngIf="registro()?.entradas?.length">
+            <h3 class="historial__titulo">Historial del mes</h3>
+            <div class="historial__lista">
+              <div class="historial__item"
+                   *ngFor="let e of registro()!.entradas">
+                <div class="historial__item-info">
+                  <span class="historial__item-desc">{{ e.descripcion }}</span>
+                  <span class="historial__item-fecha">{{ formatearFecha(e.fecha) }}</span>
+                </div>
+                <span class="historial__item-monto">{{ formatearPeso(e.monto) }}</span>
+              </div>
+            </div>
+          </div>
+
+        </section>
+      </div>
+      <!-- /sf-columna-derecha -->
+
+    </div>
+    <!-- /sf-grid -->
+
+  </div>
+</div>
