@@ -4,8 +4,9 @@
 // conectados cada 60 segundos sin que el usuario recargue.
 // ============================================================
 
-const footballService = require('../services/football.service');
-const pulseService    = require('../services/pulse.service');
+const footballService    = require('../services/football.service');
+const { transformarPartido } = footballService;
+const pulseService       = require('../services/pulse.service');
 
 const INTERVALO_MS = 60 * 1000; // 60 segundos
 
@@ -44,7 +45,8 @@ function iniciarSocketPartidos(io) {
 // ── Emite lista completa de partidos en vivo a un socket ─────
 async function emitirPartidos(socket) {
   try {
-    const partidos = await footballService.obtenerPartidosEnVivo();
+    const raw      = await footballService.obtenerPartidosEnVivo();
+    const partidos = raw.map(transformarPartido);
     socket.emit('partidos:actualizacion', {
       timestamp: new Date().toISOString(),
       total:     partidos.length,
@@ -58,7 +60,8 @@ async function emitirPartidos(socket) {
 // ── Emite a TODOS los clientes conectados (broadcast) ────────
 async function emitirPartidosGlobal(io) {
   try {
-    const partidos = await footballService.obtenerPartidosEnVivo();
+    const raw      = await footballService.obtenerPartidosEnVivo();
+    const partidos = raw.map(transformarPartido);
     io.emit('partidos:actualizacion', {
       timestamp: new Date().toISOString(),
       total:     partidos.length,
