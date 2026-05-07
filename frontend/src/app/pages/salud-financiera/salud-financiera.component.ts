@@ -6,6 +6,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule }    from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FinanzasService } from '../../services/finanzas.service';
 import {
   PerfilFinanciero,
@@ -24,6 +25,10 @@ import {
 export class SaludFinancieraComponent implements OnInit {
   private fb            = inject(FormBuilder);
   private finanzasSvc   = inject(FinanzasService);
+  private route         = inject(ActivatedRoute);
+  private router        = inject(Router);
+
+  modoConfiguracion = signal(false);
 
   // ── Estado del perfil ────────────────────────────────────
   resultado        = signal<ResultadoFinanciero | null>(null);
@@ -63,6 +68,9 @@ export class SaludFinancieraComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    if (this.route.snapshot.queryParams['configurar'] === 'true') {
+      this.modoConfiguracion.set(true);
+    }
     this.cargarPerfil();
     this.cargarRegistroMensual();
   }
@@ -71,8 +79,11 @@ export class SaludFinancieraComponent implements OnInit {
     this.finanzasSvc.obtenerPerfil().subscribe({
       next: (perfil) => {
         if (perfil) {
+          if (this.modoConfiguracion()) {
+            this.router.navigate(['/dashboard']);
+            return;
+          }
           this.formPerfil.patchValue(perfil as any);
-          // Calcular resultado con el perfil guardado
           this.finanzasSvc.calcular(perfil).subscribe((r) => this.resultado.set(r));
         }
       },
@@ -100,7 +111,10 @@ export class SaludFinancieraComponent implements OnInit {
         this.resultado.set(resultado);
         this.perfilGuardado.set(true);
         this.guardandoPerfil.set(false);
-        // Recargar registro con el nuevo límite
+        if (this.modoConfiguracion()) {
+          this.router.navigate(['/dashboard']);
+          return;
+        }
         this.cargarRegistroMensual();
         setTimeout(() => this.perfilGuardado.set(false), 3000);
       },

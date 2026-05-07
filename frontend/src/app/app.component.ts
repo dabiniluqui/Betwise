@@ -7,11 +7,12 @@ import { Component, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService }  from './services/auth.service';
+import { ChatbotComponent } from './components/chatbot/chatbot.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, ChatbotComponent],
   template: `
     <header class="navbar">
       <div class="navbar__contenedor">
@@ -21,9 +22,9 @@ import { AuthService }  from './services/auth.service';
         </a>
 
         <nav class="navbar__menu" aria-label="Navegación principal">
-          <a routerLink="/"                 routerLinkActive="activo" [routerLinkActiveOptions]="{exact:true}">En Vivo</a>
-          <a routerLink="/salud-financiera" routerLinkActive="activo" *ngIf="authService.estaLogueado()">Mi Salud Financiera</a>
           <a routerLink="/dashboard"        routerLinkActive="activo" *ngIf="authService.estaLogueado()">Mi Panel</a>
+          <a routerLink="/salud-financiera" routerLinkActive="activo" *ngIf="authService.estaLogueado()">Mi Salud Financiera</a>
+          <a routerLink="/concientizacion"  routerLinkActive="activo">Juego Responsable</a>
         </nav>
 
         <div class="navbar__acciones">
@@ -42,6 +43,8 @@ import { AuthService }  from './services/auth.service';
     <main>
       <router-outlet />
     </main>
+
+    <app-chatbot />
 
     <footer class="footer">
       <div class="footer__contenedor">

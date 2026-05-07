@@ -54,7 +54,7 @@ export class AuthService {
     localStorage.setItem(TOKEN_KEY,   res.token);
     localStorage.setItem(USUARIO_KEY, JSON.stringify(res.usuario));
     this.usuario.set(res.usuario);
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/salud-financiera'], { queryParams: { configurar: 'true' } });
   }
 
   private cargarUsuarioGuardado(): Usuario | null {

@@ -37,6 +37,13 @@ export const routes: Routes = [
         (m) => m.SaludFinancieraComponent
       ),
   },
+  {
+    path: 'concientizacion',
+    loadComponent: () =>
+      import('./pages/concientizacion/concientizacion.component').then(
+        (m) => m.ConcientizacionComponent
+      ),
+  },
   // Redirigir cualquier ruta desconocida al inicio
   { path: '**', redirectTo: '' },
 ];

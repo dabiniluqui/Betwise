@@ -3,6 +3,39 @@
 ============================================================ */
 
 .sf-wrapper { padding: 60px 0; background: var(--color-fondo); min-height: 100vh; }
+
+/* ── BANNER DE CONFIGURACIÓN INICIAL ───────────────────── */
+.banner-setup {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: rgba(0,229,160,0.08);
+  border: 1px solid rgba(0,229,160,0.3);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 32px;
+}
+
+.banner-setup__icono {
+  font-size: 2rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.banner-setup__texto strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-acento);
+  margin-bottom: 6px;
+}
+
+.banner-setup__texto p {
+  font-size: 0.88rem;
+  color: var(--color-texto-suave);
+  line-height: 1.6;
+  margin: 0;
+}
 .contenedor { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
 
 .sf-header { text-align: center; margin-bottom: 48px; }

@@ -6,10 +6,21 @@
 <div class="sf-wrapper">
   <div class="contenedor">
 
+    <!-- Banner de configuración obligatoria (solo primer ingreso) -->
+    <div class="banner-setup" *ngIf="modoConfiguracion()">
+      <div class="banner-setup__icono">⚡</div>
+      <div class="banner-setup__texto">
+        <strong>Paso necesario antes de continuar</strong>
+        <p>Para acceder a los partidos y demás funciones, primero calculá y guardá tu límite mensual seguro para apuestas. Este paso nos ayuda a promover el juego responsable.</p>
+      </div>
+    </div>
+
     <!-- Título de la página -->
     <header class="sf-header">
       <span class="etiqueta-pill etiqueta-pill--verde">💰 Mi Salud Financiera</span>
-      <h1 class="sf-header__titulo">Control financiero personal</h1>
+      <h1 class="sf-header__titulo">
+        {{ modoConfiguracion() ? 'Configurá tu límite de apuestas' : 'Control financiero personal' }}
+      </h1>
       <p class="sf-header__descripcion">
         Guardá tu perfil económico y llevá el registro de cuánto destinás a apuestas cada mes.
       </p>
