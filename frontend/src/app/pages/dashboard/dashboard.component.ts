@@ -37,7 +37,11 @@ import { Partido }          from '../../core/models/partido.model';
             <div class="spinner"></div><p>Cargando partidos...</p>
           </div>
 
-          <div class="estado-vacio" *ngIf="!cargando() && partidos().length === 0">
+          <div class="estado-error" *ngIf="!cargando() && errorConexion()">
+            <p>⚠️ {{ errorConexion() }}</p>
+          </div>
+
+          <div class="estado-vacio" *ngIf="!cargando() && !errorConexion() && partidos().length === 0">
             <p>🏟️ No hay partidos en vivo ahora mismo.</p>
           </div>
 
@@ -125,6 +129,7 @@ import { Partido }          from '../../core/models/partido.model';
     .spinner { width: 32px; height: 32px; border: 3px solid var(--color-borde); border-top-color: var(--color-acento); border-radius: 50%; animation: girar 0.8s linear infinite; }
     @keyframes girar { to { transform: rotate(360deg); } }
     .estado-vacio { text-align: center; padding: 40px 0; font-size: 0.9rem; color: var(--color-texto-suave); }
+    .estado-error { text-align: center; padding: 20px; font-size: 0.88rem; color: var(--color-peligro); background: var(--color-peligro-suave); border: 1px solid rgba(255,79,109,0.2); border-radius: 10px; }
     .badge-live { font-size: 0.62rem; font-weight: 700; background: var(--color-peligro); color: white; padding: 2px 7px; border-radius: 100px; text-transform: uppercase; width: fit-content; animation: pulsar 1.5s ease-in-out infinite; }
     @keyframes pulsar { 0%,100%{opacity:1}50%{opacity:0.6} }
   `],
@@ -138,6 +143,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   partidos  = signal<Partido[]>([]);
   favoritos = signal<Favorito[]>([]);
   cargando  = signal(true);
+  errorConexion = signal<string | null>(null);
 
   private subs = new Subscription();
 
@@ -150,7 +156,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private cargarPartidos(): void {
     this.partSvc.obtenerEnVivo().subscribe({
       next: (p) => { this.partidos.set(p); this.cargando.set(false); },
-      error: () => this.cargando.set(false),
+      error: (err) => {
+        const msg = err.status === 0
+          ? 'No se puede conectar al servidor. Asegurate de que el backend esté corriendo en puerto 3000.'
+          : 'Error al cargar los partidos. Intentá recargar la página.';
+        this.errorConexion.set(msg);
+        this.cargando.set(false);
+      },
     });
   }
 

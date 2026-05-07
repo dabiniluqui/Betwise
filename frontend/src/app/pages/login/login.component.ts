@@ -123,7 +123,10 @@ export class LoginComponent {
 
     this.authService.login(this.form.value as any).subscribe({
       error: (err) => {
-        this.error.set(err?.error?.mensaje || 'Credenciales inválidas');
+        const msg = err.status === 0
+          ? 'No se puede conectar al servidor. Asegurate de que el backend esté corriendo.'
+          : err?.error?.mensaje || 'Credenciales inválidas';
+        this.error.set(msg);
         this.cargando.set(false);
       },
     });

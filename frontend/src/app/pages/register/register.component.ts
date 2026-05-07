@@ -135,7 +135,10 @@ export class RegisterComponent {
 
     this.authService.register(this.form.value as any).subscribe({
       error: (err) => {
-        this.error.set(err?.error?.mensaje || 'Error al crear la cuenta');
+        const msg = err.status === 0
+          ? 'No se puede conectar al servidor. Asegurate de que el backend esté corriendo.'
+          : err?.error?.mensaje || 'Error al crear la cuenta';
+        this.error.set(msg);
         this.cargando.set(false);
       },
     });

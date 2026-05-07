@@ -8,8 +8,9 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { Observable }            from 'rxjs';
 import { io, Socket }            from 'socket.io-client';
 import { Partido }               from '../core/models/partido.model';
+import { environment }           from '../../environments/environment';
 
-const SOCKET_URL = 'http://localhost:3000';
+const SOCKET_URL = environment.socketUrl;
 
 @Injectable({ providedIn: 'root' })
 export class SocketService implements OnDestroy {

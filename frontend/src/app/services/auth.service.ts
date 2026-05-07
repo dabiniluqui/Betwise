@@ -9,8 +9,9 @@ import { HttpClient }                  from '@angular/common/http';
 import { Router }                      from '@angular/router';
 import { tap }                         from 'rxjs/operators';
 import { Usuario }                     from '../core/models/usuario.model';
+import { environment }                 from '../../environments/environment';
 
-const API = 'http://localhost:3000/api/v1';
+const API = environment.apiUrl;
 const TOKEN_KEY   = 'bw_token';
 const USUARIO_KEY = 'bw_usuario';
 

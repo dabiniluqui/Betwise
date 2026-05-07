@@ -8,8 +8,9 @@ import { HttpClient }          from '@angular/common/http';
 import { Observable }          from 'rxjs';
 import { map }                 from 'rxjs/operators';
 import { Noticia }             from '../core/models/partido.model';
+import { environment }        from '../../environments/environment';
 
-const API = 'http://localhost:3000/api/v1';
+const API = environment.apiUrl;
 
 @Injectable({ providedIn: 'root' })
 export class NoticiasService {

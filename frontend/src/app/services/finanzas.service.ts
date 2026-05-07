@@ -13,8 +13,9 @@ import {
   RegistroMensual,
   ProgresoMensual,
 } from '../core/models/usuario.model';
+import { environment } from '../../environments/environment';
 
-const API = 'http://localhost:3000/api/v1';
+const API = environment.apiUrl;
 
 @Injectable({ providedIn: 'root' })
 export class FinanzasService {
