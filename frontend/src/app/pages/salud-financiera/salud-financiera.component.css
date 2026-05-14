@@ -117,15 +117,14 @@
   background: rgba(0,229,160,0.07);
   border: 1px solid rgba(0,229,160,0.25);
   border-radius: 14px;
-  padding: 20px;
+  padding: 24px;
   margin-bottom: 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
-.limite-destacado__etiqueta { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-acento); font-weight: 600; }
-.limite-destacado__monto { font-family: var(--fuente-display); font-size: 2rem; font-weight: 800; color: var(--color-acento); }
-.limite-destacado__descripcion { font-size: 0.78rem; color: var(--color-texto-suave); }
+.limite-destacado__etiqueta { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-acento); font-weight: 700; margin: 0; }
+.limite-destacado__monto { font-family: var(--fuente-display); font-size: 2.4rem; font-weight: 800; color: var(--color-acento); margin: 0; line-height: 1.1; }
 
 /* ── DESGLOSE ────────────────────────────────────────────── */
 .desglose { display: flex; flex-direction: column; gap: 2px; }
@@ -194,6 +193,126 @@
 .historial__item-desc  { font-size: 0.83rem; color: var(--color-texto); }
 .historial__item-fecha { font-size: 0.68rem; color: var(--color-texto-muy-suave); }
 .historial__item-monto { font-family: var(--fuente-display); font-size: 0.9rem; font-weight: 700; color: var(--color-peligro); white-space: nowrap; }
+
+/* ── ENCABEZADO DEL FORM CARD ────────────────────────────── */
+.sf-card-form { display: flex; flex-direction: column; gap: 20px; }
+
+.card__encabezado { margin-bottom: 0; }
+
+.card__subtitulo {
+  font-size: 0.82rem;
+  color: var(--color-texto-muy-suave);
+  margin: 4px 0 0;
+}
+
+/* ── SEPARADORES DE SECCIÓN (reemplaza .seccion-label) ─────── */
+.sf-seccion-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0 10px;
+}
+.sf-seccion-label__linea {
+  flex: 1;
+  height: 1px;
+  background: var(--color-borde);
+}
+.sf-seccion-label__texto {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-texto-muy-suave);
+  white-space: nowrap;
+}
+
+/* ── NOTA DE CONCIENTIZACIÓN (pie del form) ──────────────── */
+.sf-nota-conciencia {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: 8px;
+  padding: 14px 16px;
+  background: rgba(255, 130, 0, 0.05);
+  border-left: 3px solid rgba(255, 130, 0, 0.5);
+  border-radius: 0 10px 10px 0;
+}
+.sf-nota-conciencia__icono { font-size: 1rem; flex-shrink: 0; line-height: 1.5; }
+.sf-nota-conciencia__texto { display: flex; flex-direction: column; gap: 4px; }
+.sf-nota-conciencia__texto p {
+  font-size: 0.78rem;
+  color: var(--color-texto-suave);
+  line-height: 1.5;
+  margin: 0;
+}
+.sf-nota-conciencia__link {
+  font-size: 0.75rem;
+  color: var(--color-advertencia);
+  text-decoration: none;
+  font-weight: 600;
+}
+.sf-nota-conciencia__link:hover { text-decoration: underline; }
+
+/* ── HEADER DEL RESULTADO CON MINI-DONUT ────────────────── */
+.sf-resultado-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-borde);
+}
+.sf-resultado-header__info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sf-resultado-header__titulo { margin-bottom: 0 !important; padding-bottom: 0 !important; border-bottom: none !important; }
+
+.sf-donut-mini-wrap {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.donut-mini {
+  width: 68px;
+  height: 68px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.sf-donut-mini__pct {
+  font-family: var(--fuente-display);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--color-texto);
+  position: relative;
+  z-index: 1;
+}
+
+/* ── BADGE DE ESTADO DE SALUD ────────────────────────────── */
+.badge-estado {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid transparent;
+  letter-spacing: 0.03em;
+}
+
+/* ── LIMITE DESTACADO (mejorado) ─────────────────────────── */
+.limite-destacado__aviso {
+  font-size: 0.72rem;
+  color: var(--color-texto-muy-suave);
+  line-height: 1.5;
+  margin: 0;
+  font-style: italic;
+}
 
 /* ── MENSAJES ────────────────────────────────────────────── */
 .mensaje-exito {

@@ -22,9 +22,9 @@ import { ChatbotComponent } from './components/chatbot/chatbot.component';
         </a>
 
         <nav class="navbar__menu" aria-label="Navegación principal">
-          <a routerLink="/dashboard"        routerLinkActive="activo" *ngIf="authService.estaLogueado()">Mi Panel</a>
           <a routerLink="/salud-financiera" routerLinkActive="activo" *ngIf="authService.estaLogueado()">Mi Salud Financiera</a>
           <a routerLink="/concientizacion"  routerLinkActive="activo">Juego Responsable</a>
+          <a routerLink="/dashboard"        routerLinkActive="activo" *ngIf="authService.estaLogueado()">Partidos en vivo</a>
         </nav>
 
         <div class="navbar__acciones">

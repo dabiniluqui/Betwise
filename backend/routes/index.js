@@ -11,6 +11,7 @@ const partidosRoutes = require('./partidos.routes');
 const finanzasRoutes = require('./finanzas.routes');
 const favoritosRoutes = require('./favoritos.routes');
 const scrapingRoutes = require('./scraping.routes');
+const chatbotRoutes  = require('./chatbot.routes');
 
 const router = Router();
 
@@ -19,5 +20,6 @@ router.use('/partidos', partidosRoutes);
 router.use('/finanzas', finanzasRoutes);
 router.use('/favoritos', favoritosRoutes);
 router.use('/scraping', scrapingRoutes);
+router.use('/chatbot',  chatbotRoutes);
 
 module.exports = router;

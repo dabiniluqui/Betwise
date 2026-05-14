@@ -1,9 +1,139 @@
 <!-- ============================================================
      landing.component.html
-     Página de bienvenida: descripción + login embebido.
+     Condicional: Welcome Dashboard (logueado) o Marketing+Login.
 ============================================================ -->
 
-<div class="landing-wrapper">
+<!-- ══════════════════════════════════════════════════════════
+     WELCOME DASHBOARD — visible solo cuando el usuario está logueado
+══════════════════════════════════════════════════════════ -->
+<div *ngIf="authService.estaLogueado()" class="home-wrapper">
+
+  <!-- Hero personalizado -->
+  <section class="home-hero">
+    <span class="etiqueta-pill">⚡ BetWise Argentina</span>
+    <h1 class="home-hero__titulo">
+      ¡Hola, <span class="home-hero__nombre">{{ authService.usuario()?.nombre }}</span>! 🌿
+    </h1>
+    <p class="home-hero__subtitulo">
+      Tu bienestar financiero, siempre primero.
+    </p>
+  </section>
+
+  <!-- Cargando datos -->
+  <div class="home-cargando" *ngIf="cargandoHome()">
+    <div class="spinner-home"></div>
+    <p>Cargando tu resumen financiero...</p>
+  </div>
+
+  <!-- Métricas financieras (si hay perfil guardado) -->
+  <section class="home-metricas" *ngIf="resultadoHome() as r">
+
+    <!-- Donut SVG: Índice de salud financiera -->
+    <div class="home-donut-card">
+      <svg class="donut-chart" viewBox="0 0 36 36" role="img" aria-label="Índice de salud financiera">
+        <circle class="donut-ring"
+                cx="18" cy="18" r="15.9"
+                fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3.5"/>
+        <circle class="donut-segmento"
+                cx="18" cy="18" r="15.9"
+                fill="none"
+                [attr.stroke]="colorPorSalud(r.estado_salud)"
+                stroke-width="3.5"
+                stroke-linecap="round"
+                [attr.stroke-dasharray]="r.indice_salud + ' 100'"
+                stroke-dashoffset="25"/>
+      </svg>
+      <p class="home-donut__pct">{{ r.indice_salud }}<span class="home-donut__simbolo">%</span></p>
+      <p class="home-donut__label">Índice de salud</p>
+      <span class="home-badge-salud"
+            [style.color]="colorPorSalud(r.estado_salud)"
+            [style.background]="colorPorSalud(r.estado_salud) + '20'"
+            [style.border]="'1px solid ' + colorPorSalud(r.estado_salud) + '50'">
+        {{ r.estado_salud }}
+      </span>
+    </div>
+
+    <!-- Stat: Dinero disponible -->
+    <div class="home-stat-card">
+      <span class="home-stat-card__icono">💵</span>
+      <p class="home-stat-card__valor">{{ formatearPeso(r.disponible) }}</p>
+      <p class="home-stat-card__etiqueta">Dinero disponible</p>
+      <p class="home-stat-card__desc">Después de gastos y ahorro</p>
+    </div>
+
+    <!-- Stat: Límite de apuestas -->
+    <div class="home-stat-card home-stat-card--alerta">
+      <span class="home-stat-card__icono">🎯</span>
+      <p class="home-stat-card__valor home-stat-card__valor--acento">{{ formatearPeso(r.limite_apuestas) }}</p>
+      <p class="home-stat-card__etiqueta">Límite sugerido</p>
+      <p class="home-stat-card__desc">Máximo mensual para apuestas</p>
+    </div>
+
+    <!-- Stat: Meta de ahorro -->
+    <div class="home-stat-card">
+      <span class="home-stat-card__icono">🏦</span>
+      <p class="home-stat-card__valor">{{ formatearPeso(r.ahorro_meta) }}</p>
+      <p class="home-stat-card__etiqueta">Meta de ahorro</p>
+      <p class="home-stat-card__desc">{{ r.nivel_ahorro_pct }}% de tu sueldo</p>
+    </div>
+
+  </section>
+
+  <!-- Sin perfil: CTA para configurar -->
+  <section class="home-sin-perfil" *ngIf="!resultadoHome() && !cargandoHome()">
+    <div class="home-sin-perfil__icono">📊</div>
+    <h2 class="home-sin-perfil__titulo">Aún no configuraste tu perfil financiero</h2>
+    <p class="home-sin-perfil__desc">
+      Calculá tu límite mensual seguro y conocé en qué estado está tu salud financiera.
+    </p>
+    <a routerLink="/salud-financiera" class="btn btn--primario">
+      Configurar perfil →
+    </a>
+  </section>
+
+  <!-- Sección de concientización / datos motivadores -->
+  <section class="home-conciencia">
+    <div class="home-conciencia__contenido">
+      <span class="etiqueta-pill etiqueta-pill--roja">🎗️ Sabías que...</span>
+      <h2 class="home-conciencia__titulo">El mejor capital es el que no se arriesga</h2>
+      <ul class="home-conciencia__lista">
+        <li>
+          <span class="home-conciencia__dot"></span>
+          El <strong>98% de los apostadores habituales</strong> pierden dinero a largo plazo.
+        </li>
+        <li>
+          <span class="home-conciencia__dot"></span>
+          Cada peso que no apostás es un peso que trabaja para <strong>tus metas reales</strong>.
+        </li>
+        <li>
+          <span class="home-conciencia__dot"></span>
+          El control financiero puede reducir el estrés económico hasta en un <strong>60%</strong>.
+        </li>
+        <li>
+          <span class="home-conciencia__dot"></span>
+          Las casas de apuestas están diseñadas para que el <strong>margen siempre favorezca al operador</strong>, sin excepción.
+        </li>
+      </ul>
+      <a routerLink="/concientizacion" class="link-conciencia">
+        Conocé más sobre juego responsable →
+      </a>
+    </div>
+  </section>
+
+  <!-- Acciones rápidas -->
+  <div class="home-acciones">
+    <a routerLink="/salud-financiera" class="btn btn--primario">Mi Salud Financiera</a>
+    <a routerLink="/concientizacion"  class="btn btn--ghost">Juego Responsable</a>
+    <a routerLink="/dashboard"        class="btn btn--ghost">Partidos en vivo</a>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     MARKETING + LOGIN — visible solo cuando NO está logueado
+══════════════════════════════════════════════════════════ -->
+<div *ngIf="!authService.estaLogueado()" class="landing-wrapper">
 
   <!-- ── COLUMNA IZQUIERDA: Descripción ─────────────────── -->
   <div class="landing-info">
@@ -11,8 +141,8 @@
     <span class="etiqueta-pill">⚡ BetWise Argentina</span>
 
     <h1 class="landing-titulo">
-      Fútbol en vivo.<br>
-      <span class="landing-titulo--acento">Finanzas bajo control.</span>
+      Primero finanzas<br>
+      <span class="landing-titulo--acento">bajo control.</span>
     </h1>
 
     <p class="landing-subtitulo">
@@ -21,13 +151,6 @@
     </p>
 
     <ul class="features-lista">
-      <li class="features-item">
-        <span class="features-item__icono">⚽</span>
-        <div>
-          <strong>Partidos en vivo</strong>
-          <p>Scores y Pulse Score en tiempo real vía WebSocket.</p>
-        </div>
-      </li>
       <li class="features-item">
         <span class="features-item__icono">💰</span>
         <div>
@@ -40,6 +163,13 @@
         <div>
           <strong>Juego responsable</strong>
           <p>Información y recursos para apostar de manera consciente.</p>
+        </div>
+      </li>
+      <li class="features-item">
+        <span class="features-item__icono">⚽</span>
+        <div>
+          <strong>Partidos en vivo</strong>
+          <p>Scores y Pulse Score en tiempo real vía WebSocket.</p>
         </div>
       </li>
     </ul>
@@ -90,7 +220,7 @@
       </form>
 
       <p class="login-card__nota">
-        Al ingresar, deberás configurar tu límite de apuestas mensual antes de acceder a los partidos.
+        Al ingresar, podrás configurar tu perfil financiero y acceder a todas las funciones.
       </p>
     </div>
 

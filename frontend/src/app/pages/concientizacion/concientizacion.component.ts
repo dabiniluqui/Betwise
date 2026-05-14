@@ -5,13 +5,14 @@
 
 import { Component, inject } from '@angular/core';
 import { CommonModule }      from '@angular/common';
-import { RouterLink }        from '@angular/router';
+import { Router }            from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { AuthService }  from '../../services/auth.service';
 
 @Component({
   selector: 'app-concientizacion',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   template: `
     <div class="conc-wrapper">
 
@@ -119,9 +120,9 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
           <p class="conc-cta__texto">
             ¿Querés saber cuánto podés destinar responsablemente a apuestas cada mes?
           </p>
-          <a routerLink="/" class="btn btn--primario">
+          <button (click)="irAlCalculador()" class="btn btn--primario">
             Calculá tu límite seguro →
-          </a>
+          </button>
         </div>
 
       </div>
@@ -301,7 +302,15 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
   `],
 })
 export class ConcientizacionComponent {
-  private sanitizer = inject(DomSanitizer);
+  private sanitizer   = inject(DomSanitizer);
+  private router      = inject(Router);
+  private authService = inject(AuthService);
+
+  irAlCalculador(): void {
+    this.router.navigate(
+      this.authService.estaLogueado() ? ['/salud-financiera'] : ['/']
+    );
+  }
 
   videos: SafeResourceUrl[] = [
     this.sanitizer.bypassSecurityTrustResourceUrl('https://www.youtube.com/embed/9Y9i1qO5U2g'),

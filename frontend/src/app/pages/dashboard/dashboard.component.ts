@@ -46,20 +46,35 @@ import { Partido }          from '../../core/models/partido.model';
           </div>
 
           <div class="partidos-lista" *ngIf="!cargando() && partidos().length > 0">
-            <div class="partido-row" *ngFor="let p of partidos()">
-              <div class="partido-row__info">
-                <span class="partido-row__liga">{{ p.liga.nombre }} · {{ p.liga.pais }}</span>
-                <div class="partido-row__marcador">
-                  <span class="partido-row__equipo">{{ p.equipoLocal.nombre }}</span>
-                  <span class="partido-row__score">
-                    {{ p.equipoLocal.goles ?? '-' }} : {{ p.equipoVisitante.goles ?? '-' }}
-                  </span>
-                  <span class="partido-row__equipo">{{ p.equipoVisitante.nombre }}</span>
+            <div class="partido-card" *ngFor="let p of partidos()">
+              <span class="partido-card__liga">{{ p.liga.nombre }} · {{ p.liga.pais }}</span>
+
+              <div class="partido-card__encuentro">
+                <div class="partido-card__equipo">
+                  <img class="partido-card__escudo"
+                       [src]="p.equipoLocal.logo"
+                       [alt]="p.equipoLocal.nombre"
+                       (error)="onImgError($event)" />
+                  <span class="partido-card__nombre">{{ p.equipoLocal.nombre }}</span>
                 </div>
-                <span class="badge-live">{{ p.minuto ? p.minuto + "'" : p.estado }}</span>
+
+                <div class="partido-card__centro">
+                  <div class="partido-card__score">
+                    {{ p.equipoLocal.goles ?? '-' }} : {{ p.equipoVisitante.goles ?? '-' }}
+                  </div>
+                  <span class="badge-live">{{ p.minuto ? p.minuto + "'" : p.estado }}</span>
+                </div>
+
+                <div class="partido-card__equipo">
+                  <img class="partido-card__escudo"
+                       [src]="p.equipoVisitante.logo"
+                       [alt]="p.equipoVisitante.nombre"
+                       (error)="onImgError($event)" />
+                  <span class="partido-card__nombre">{{ p.equipoVisitante.nombre }}</span>
+                </div>
               </div>
 
-              <div class="partido-row__acciones">
+              <div class="partido-card__acciones">
                 <button class="btn btn--ghost btn--pequeño"
                         (click)="suscribirPulse(p)">
                   Ver Pulse ⚡
@@ -104,18 +119,25 @@ import { Partido }          from '../../core/models/partido.model';
     .dash-header__subtitulo { font-size: 0.88rem; color: var(--color-texto-suave); }
     .dash-seccion { margin-bottom: 40px; }
     .dash-seccion__titulo { font-family: var(--fuente-display); font-size: 1.15rem; font-weight: 700; color: var(--color-texto); margin: 0 0 18px; padding-bottom: 12px; border-bottom: 1px solid var(--color-borde); }
-    .partidos-lista, .favoritos-lista { display: flex; flex-direction: column; gap: 10px; }
-    .partido-row {
-      display: flex; justify-content: space-between; align-items: center;
+    .partidos-lista, .favoritos-lista { display: flex; flex-direction: column; gap: 12px; }
+    .partido-card {
+      display: flex; flex-direction: column; gap: 14px;
       background: var(--color-superficie); border: 1px solid var(--color-borde);
-      border-radius: 14px; padding: 16px 20px; gap: 16px; flex-wrap: wrap;
+      border-radius: 14px; padding: 16px 20px;
     }
-    .partido-row__info   { display: flex; flex-direction: column; gap: 6px; }
-    .partido-row__liga   { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-texto-muy-suave); }
-    .partido-row__marcador { display: flex; align-items: center; gap: 12px; }
-    .partido-row__equipo { font-size: 0.92rem; font-weight: 600; color: var(--color-texto); }
-    .partido-row__score  { font-family: var(--fuente-display); font-size: 1.3rem; font-weight: 800; color: var(--color-texto); padding: 0 8px; }
-    .partido-row__acciones { display: flex; gap: 8px; }
+    .partido-card__liga { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-texto-muy-suave); }
+    .partido-card__encuentro {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .partido-card__equipo {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      flex: 1; text-align: center;
+    }
+    .partido-card__escudo { width: 48px; height: 48px; object-fit: contain; }
+    .partido-card__nombre { font-size: 0.85rem; font-weight: 600; color: var(--color-texto); }
+    .partido-card__centro { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .partido-card__score { font-family: var(--fuente-display); font-size: 1.8rem; font-weight: 800; color: var(--color-texto); }
+    .partido-card__acciones { display: flex; gap: 8px; justify-content: flex-end; }
     .favorito-item {
       display: flex; justify-content: space-between; align-items: center;
       background: var(--color-superficie); border: 1px solid var(--color-borde);
@@ -194,6 +216,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.favSvc.eliminar(id).subscribe(() => {
       this.favoritos.update((prev) => prev.filter((f) => f.id !== id));
     });
+  }
+
+  onImgError(event: Event): void {
+    (event.target as HTMLImageElement).style.visibility = 'hidden';
   }
 
   ngOnDestroy(): void { this.subs.unsubscribe(); }

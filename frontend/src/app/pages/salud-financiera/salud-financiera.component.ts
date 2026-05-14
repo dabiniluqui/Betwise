@@ -6,7 +6,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule }    from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FinanzasService } from '../../services/finanzas.service';
 import {
   PerfilFinanciero,
@@ -18,7 +18,7 @@ import {
 @Component({
   selector: 'app-salud-financiera',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './salud-financiera.component.html',
   styleUrls: ['./salud-financiera.component.css'],
 })
@@ -169,6 +169,16 @@ export class SaludFinancieraComponent implements OnInit {
       limite_superado:   'alerta--roja',
     };
     return map[alerta] || '';
+  }
+
+  colorPorEstadoSalud(estado: string): string {
+    const map: Record<string, string> = {
+      'Excelente': '#00e5a0',
+      'Bueno':     '#4fc3f7',
+      'Regular':   '#ffc145',
+      'Crítico':   '#ff4f6d',
+    };
+    return map[estado] ?? '#00e5a0';
   }
 
   mensajeAlerta(alerta: string): string {

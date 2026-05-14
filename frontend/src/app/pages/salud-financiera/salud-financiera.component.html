@@ -6,21 +6,10 @@
 <div class="sf-wrapper">
   <div class="contenedor">
 
-    <!-- Banner de configuración obligatoria (solo primer ingreso) -->
-    <div class="banner-setup" *ngIf="modoConfiguracion()">
-      <div class="banner-setup__icono">⚡</div>
-      <div class="banner-setup__texto">
-        <strong>Paso necesario antes de continuar</strong>
-        <p>Para acceder a los partidos y demás funciones, primero calculá y guardá tu límite mensual seguro para apuestas. Este paso nos ayuda a promover el juego responsable.</p>
-      </div>
-    </div>
-
     <!-- Título de la página -->
     <header class="sf-header">
       <span class="etiqueta-pill etiqueta-pill--verde">💰 Mi Salud Financiera</span>
-      <h1 class="sf-header__titulo">
-        {{ modoConfiguracion() ? 'Configurá tu límite de apuestas' : 'Control financiero personal' }}
-      </h1>
+      <h1 class="sf-header__titulo">Control financiero personal</h1>
       <p class="sf-header__descripcion">
         Guardá tu perfil económico y llevá el registro de cuánto destinás a apuestas cada mes.
       </p>
@@ -30,8 +19,12 @@
     <div class="sf-grid">
 
       <!-- COLUMNA 1: Formulario de perfil -->
-      <section class="card" aria-labelledby="titulo-perfil">
-        <h2 id="titulo-perfil" class="card__titulo">Mi perfil financiero</h2>
+      <section class="card sf-card-form" aria-labelledby="titulo-perfil">
+
+        <div class="card__encabezado">
+          <h2 id="titulo-perfil" class="card__titulo">Mi perfil financiero</h2>
+          <p class="card__subtitulo">Ingresá tus datos para calcular tu situación</p>
+        </div>
 
         <form [formGroup]="formPerfil" (ngSubmit)="guardarPerfil()" novalidate>
 
@@ -44,7 +37,11 @@
             </div>
           </div>
 
-          <p class="seccion-label">Gastos fijos</p>
+          <div class="sf-seccion-label">
+            <span class="sf-seccion-label__linea"></span>
+            <span class="sf-seccion-label__texto">Gastos fijos</span>
+            <span class="sf-seccion-label__linea"></span>
+          </div>
           <div class="campo-doble">
             <div class="campo-grupo">
               <label class="campo-label" for="sf-alquiler">Alquiler</label>
@@ -80,7 +77,11 @@
             </div>
           </div>
 
-          <p class="seccion-label">Gastos variables</p>
+          <div class="sf-seccion-label">
+            <span class="sf-seccion-label__linea"></span>
+            <span class="sf-seccion-label__texto">Gastos variables</span>
+            <span class="sf-seccion-label__linea"></span>
+          </div>
           <div class="campo-doble">
             <div class="campo-grupo">
               <label class="campo-label" for="sf-alim">Alimentación</label>
@@ -108,8 +109,12 @@
             </div>
           </div>
 
+          <div class="sf-seccion-label">
+            <span class="sf-seccion-label__linea"></span>
+            <span class="sf-seccion-label__texto">Meta de ahorro</span>
+            <span class="sf-seccion-label__linea"></span>
+          </div>
           <div class="campo-grupo">
-            <label class="campo-label" for="sf-ahorro">Meta de ahorro</label>
             <select id="sf-ahorro" class="campo-select" formControlName="nivel_ahorro">
               <option value="bajo_5">Bajo — 5%</option>
               <option value="moderado_10">Moderado — 10%</option>
@@ -127,6 +132,18 @@
             {{ guardandoPerfil() ? 'Guardando...' : 'Guardar perfil →' }}
           </button>
         </form>
+
+        <!-- Nota de concientización integrada al pie -->
+        <div class="sf-nota-conciencia">
+          <span class="sf-nota-conciencia__icono">⚠️</span>
+          <div class="sf-nota-conciencia__texto">
+            <p>Esta herramienta no recomienda apostar. Tu capital merece ser protegido, no arriesgado.</p>
+            <a routerLink="/concientizacion" class="sf-nota-conciencia__link">
+              Conocé los riesgos →
+            </a>
+          </div>
+        </div>
+
       </section>
 
       <!-- COLUMNA 2: Resultado + Registro mensual -->
@@ -134,16 +151,42 @@
 
         <!-- Resultado calculado -->
         <section class="card" *ngIf="resultado() as r" aria-labelledby="titulo-resultado">
-          <h2 id="titulo-resultado" class="card__titulo">Resumen financiero</h2>
 
+          <!-- Header con mini-donut + badge -->
+          <div class="sf-resultado-header">
+            <div class="sf-donut-mini-wrap">
+              <svg class="donut-mini" viewBox="0 0 36 36" aria-hidden="true">
+                <circle cx="18" cy="18" r="15.9"
+                        fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3.5"/>
+                <circle cx="18" cy="18" r="15.9" fill="none"
+                        [attr.stroke]="colorPorEstadoSalud(r.estado_salud)"
+                        stroke-width="3.5" stroke-linecap="round"
+                        [attr.stroke-dasharray]="r.indice_salud + ' 100'"
+                        stroke-dashoffset="25"/>
+              </svg>
+              <span class="sf-donut-mini__pct">{{ r.indice_salud }}%</span>
+            </div>
+            <div class="sf-resultado-header__info">
+              <h2 id="titulo-resultado" class="card__titulo sf-resultado-header__titulo">Tu salud financiera</h2>
+              <span class="badge-estado"
+                    [style.color]="colorPorEstadoSalud(r.estado_salud)"
+                    [style.background]="colorPorEstadoSalud(r.estado_salud) + '1a'"
+                    [style.borderColor]="colorPorEstadoSalud(r.estado_salud) + '60'">
+                {{ r.estado_salud }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Límite destacado -->
           <div class="limite-destacado">
             <p class="limite-destacado__etiqueta">🎯 Límite mensual para apuestas</p>
             <p class="limite-destacado__monto">{{ formatearPeso(r.limite_apuestas) }}</p>
-            <p class="limite-destacado__descripcion">
-              Índice de salud: <strong>{{ r.indice_salud }}%</strong> — {{ r.estado_salud }}
+            <p class="limite-destacado__aviso">
+              Recordá: el mejor límite siempre es cero. Este es el máximo, no una recomendación.
             </p>
           </div>
 
+          <!-- Desglose -->
           <div class="desglose">
             <div class="desglose__fila">
               <span>Sueldo neto</span>
