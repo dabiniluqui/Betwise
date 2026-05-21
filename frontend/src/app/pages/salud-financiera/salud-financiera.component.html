@@ -26,6 +26,23 @@
           <p class="card__subtitulo">Ingresá tus datos para calcular tu situación</p>
         </div>
 
+        <!-- Perfiles de ejemplo -->
+        <div class="sf-ejemplos">
+          <p class="sf-ejemplos__titulo">Cargar perfil de ejemplo</p>
+          <p class="sf-ejemplos__desc">Seleccioná un punto de partida y ajustá los valores a tu situación.</p>
+          <div class="sf-ejemplos__botones">
+            <button type="button" class="sf-ejemplo-btn" (click)="cargarEjemplo('basico')">
+              💼 Básico <span>~$400k</span>
+            </button>
+            <button type="button" class="sf-ejemplo-btn" (click)="cargarEjemplo('estandar')">
+              📊 Estándar <span>~$800k</span>
+            </button>
+            <button type="button" class="sf-ejemplo-btn" (click)="cargarEjemplo('alto')">
+              🚀 Alto <span>~$1.5M</span>
+            </button>
+          </div>
+        </div>
+
         <form [formGroup]="formPerfil" (ngSubmit)="guardarPerfil()" novalidate>
 
           <div class="campo-grupo">
@@ -282,17 +299,87 @@
           <div class="historial" *ngIf="registro()?.entradas?.length">
             <h3 class="historial__titulo">Historial del mes</h3>
             <div class="historial__lista">
-              <div class="historial__item"
-                   *ngFor="let e of registro()!.entradas">
-                <div class="historial__item-info">
-                  <span class="historial__item-desc">{{ e.descripcion }}</span>
-                  <span class="historial__item-fecha">{{ formatearFecha(e.fecha) }}</span>
+              <ng-container *ngFor="let e of registro()!.entradas; let i = index">
+
+                <!-- Vista normal -->
+                <div class="historial__item" *ngIf="editandoIndice() !== i">
+                  <div class="historial__item-info">
+                    <span class="historial__item-desc">{{ e.descripcion }}</span>
+                    <span class="historial__item-fecha">{{ formatearFecha(e.fecha) }}</span>
+                  </div>
+                  <div class="historial__item-acciones">
+                    <span class="historial__item-monto">{{ formatearPeso(e.monto) }}</span>
+                    <button type="button" class="historial__btn-accion historial__btn-editar"
+                            title="Editar" (click)="iniciarEdicion(i, e)"
+                            [disabled]="eliminandoIndice() !== null">✏️</button>
+                    <button type="button" class="historial__btn-accion historial__btn-eliminar"
+                            title="Eliminar" (click)="eliminarEntrada(i)"
+                            [disabled]="eliminandoIndice() !== null">
+                      {{ eliminandoIndice() === i ? '...' : '🗑️' }}
+                    </button>
+                  </div>
                 </div>
-                <span class="historial__item-monto">{{ formatearPeso(e.monto) }}</span>
-              </div>
+
+                <!-- Formulario inline de edición -->
+                <div class="historial__item-edicion" *ngIf="editandoIndice() === i">
+                  <form [formGroup]="formEdicion" (ngSubmit)="guardarEdicion()" novalidate class="edicion-form">
+                    <div class="campo-doble">
+                      <div class="campo-grupo">
+                        <label class="campo-label">Monto</label>
+                        <div class="campo-input-wrap">
+                          <span class="campo-prefijo">$</span>
+                          <input type="number" class="campo-input" formControlName="monto" min="0.01" step="0.01" />
+                        </div>
+                      </div>
+                      <div class="campo-grupo">
+                        <label class="campo-label">Descripción</label>
+                        <input type="text" class="campo-input" formControlName="descripcion" />
+                      </div>
+                    </div>
+                    <p class="mensaje-error" *ngIf="errorEdicion()">{{ errorEdicion() }}</p>
+                    <div class="edicion-form__acciones">
+                      <button type="submit" class="btn btn--primario"
+                              [disabled]="guardandoEdicion() || formEdicion.invalid">
+                        {{ guardandoEdicion() ? 'Guardando...' : 'Guardar' }}
+                      </button>
+                      <button type="button" class="btn btn--ghost" (click)="cancelarEdicion()">Cancelar</button>
+                    </div>
+                  </form>
+                </div>
+
+              </ng-container>
             </div>
           </div>
 
+        </section>
+
+        <!-- Historial de meses anteriores -->
+        <section class="card historial-anterior" *ngIf="historial().length > 0">
+          <h2 class="card__titulo">Historial de meses anteriores</h2>
+          <p class="card__subtitulo">Resumen financiero de cada mes registrado</p>
+          <div class="historial-anterior__lista">
+            <div class="historial-anterior__card" *ngFor="let r of historial()">
+              <div class="historial-anterior__mes">
+                <span class="historial-anterior__nombre">{{ nombreMesAnio(r.mes, r.anio) | titlecase }}</span>
+                <span class="historial-anterior__entradas">{{ r.entradas?.length || 0 }} registro{{ (r.entradas?.length || 0) !== 1 ? 's' : '' }}</span>
+              </div>
+              <div class="historial-anterior__numeros">
+                <span class="historial-anterior__total" [ngClass]="alertaHistorial(r)">
+                  {{ formatearPeso(r.total_registrado) }}
+                </span>
+                <span class="historial-anterior__de">de</span>
+                <span class="historial-anterior__limite">{{ formatearPeso(r.limite_calculado) }}</span>
+              </div>
+              <div class="historial-anterior__barra-wrap">
+                <div class="historial-anterior__barra">
+                  <div class="historial-anterior__barra-relleno"
+                       [style.width.%]="porcentajeHistorial(r)"
+                       [ngClass]="alertaHistorial(r)"></div>
+                </div>
+                <span class="historial-anterior__pct">{{ porcentajeHistorial(r) }}%</span>
+              </div>
+            </div>
+          </div>
         </section>
       </div>
       <!-- /sf-columna-derecha -->

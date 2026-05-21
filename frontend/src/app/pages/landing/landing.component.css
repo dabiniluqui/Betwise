@@ -223,9 +223,9 @@
 /* Métricas */
 .home-metricas {
   display: grid;
-  grid-template-columns: 200px repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
 }
 
 /* Donut card */
@@ -233,10 +233,11 @@
   background: var(--color-superficie);
   border: 1px solid var(--color-borde);
   border-radius: 20px;
-  padding: 28px 20px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 8px;
 }
 .donut-chart {
@@ -276,6 +277,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  justify-content: center;
 }
 .home-stat-card--alerta { border-color: rgba(0,229,160,0.25); }
 .home-stat-card__icono  { font-size: 1.6rem; }
@@ -393,7 +395,6 @@
   .home-metricas {
     grid-template-columns: 1fr 1fr;
   }
-  .home-donut-card { grid-column: 1 / -1; }
   .home-conciencia { padding: 28px 20px; }
 }
 @media (max-width: 520px) {

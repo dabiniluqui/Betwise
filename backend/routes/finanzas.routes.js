@@ -29,4 +29,13 @@ router.get('/registro/:anio/:mes', verificarToken, finanzasController.obtenerReg
 // POST /api/v1/finanzas/registro/entrada — Requiere JWT
 router.post('/registro/entrada', verificarToken, validarEntradaMensual, finanzasController.agregarEntrada);
 
+// DELETE /api/v1/finanzas/registro/entrada/:indice — Requiere JWT
+router.delete('/registro/entrada/:indice', verificarToken, finanzasController.eliminarEntrada);
+
+// PUT /api/v1/finanzas/registro/entrada/:indice — Requiere JWT
+router.put('/registro/entrada/:indice', verificarToken, validarEntradaMensual, finanzasController.editarEntrada);
+
+// GET /api/v1/finanzas/historial — Requiere JWT
+router.get('/historial', verificarToken, finanzasController.obtenerHistorial);
+
 module.exports = router;

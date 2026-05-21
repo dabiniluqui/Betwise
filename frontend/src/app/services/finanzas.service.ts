@@ -53,4 +53,22 @@ export class FinanzasService {
       .post<any>(`${API}/finanzas/registro/entrada`, { monto, descripcion })
       .pipe(map((res) => ({ registro: res.registro, progreso: res.progreso })));
   }
+
+  eliminarEntrada(indice: number): Observable<{ registro: RegistroMensual; progreso: ProgresoMensual }> {
+    return this.http
+      .delete<any>(`${API}/finanzas/registro/entrada/${indice}`)
+      .pipe(map((res) => ({ registro: res.registro, progreso: res.progreso })));
+  }
+
+  editarEntrada(indice: number, monto: number, descripcion: string): Observable<{ registro: RegistroMensual; progreso: ProgresoMensual }> {
+    return this.http
+      .put<any>(`${API}/finanzas/registro/entrada/${indice}`, { monto, descripcion })
+      .pipe(map((res) => ({ registro: res.registro, progreso: res.progreso })));
+  }
+
+  obtenerHistorial(): Observable<RegistroMensual[]> {
+    return this.http
+      .get<{ ok: boolean; registros: RegistroMensual[] }>(`${API}/finanzas/historial`)
+      .pipe(map((res) => res.registros));
+  }
 }

@@ -13,7 +13,29 @@ import {
   ResultadoFinanciero,
   RegistroMensual,
   ProgresoMensual,
+  EntradaMensual,
 } from '../../core/models/usuario.model';
+
+const EJEMPLOS: Record<string, Partial<PerfilFinanciero>> = {
+  basico: {
+    sueldo_neto: 400000, gasto_alquiler: 120000, gasto_servicios: 30000,
+    gasto_transporte: 30000, gasto_cuotas: 0,
+    gasto_alimentacion: 80000, gasto_entretenimiento: 15000, gasto_otros: 20000,
+    nivel_ahorro: 'recomendado_20',
+  },
+  estandar: {
+    sueldo_neto: 800000, gasto_alquiler: 250000, gasto_servicios: 50000,
+    gasto_transporte: 50000, gasto_cuotas: 30000,
+    gasto_alimentacion: 150000, gasto_entretenimiento: 40000, gasto_otros: 50000,
+    nivel_ahorro: 'recomendado_20',
+  },
+  alto: {
+    sueldo_neto: 1500000, gasto_alquiler: 450000, gasto_servicios: 80000,
+    gasto_transporte: 80000, gasto_cuotas: 100000,
+    gasto_alimentacion: 250000, gasto_entretenimiento: 80000, gasto_otros: 100000,
+    nivel_ahorro: 'recomendado_20',
+  },
+};
 
 @Component({
   selector: 'app-salud-financiera',
@@ -44,6 +66,15 @@ export class SaludFinancieraComponent implements OnInit {
   errorEntrada     = signal<string | null>(null);
   entradaExitosa   = signal(false);
 
+  // ── Estado de edición / eliminación ──────────────────────
+  editandoIndice   = signal<number | null>(null);
+  guardandoEdicion = signal(false);
+  errorEdicion     = signal<string | null>(null);
+  eliminandoIndice = signal<number | null>(null);
+
+  // ── Historial de meses anteriores ────────────────────────
+  historial        = signal<RegistroMensual[]>([]);
+
   mesActual  = new Date().getMonth() + 1;
   anioActual = new Date().getFullYear();
   nombreMes  = new Date().toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
@@ -61,6 +92,12 @@ export class SaludFinancieraComponent implements OnInit {
     nivel_ahorro:          ['recomendado_20'],
   });
 
+  // ── Formulario de edición de entrada ─────────────────────
+  formEdicion = this.fb.group({
+    monto:       [null as number | null, [Validators.required, Validators.min(0.01)]],
+    descripcion: ['', Validators.required],
+  });
+
   // ── Formulario de nueva entrada ──────────────────────────
   formEntrada = this.fb.group({
     monto:       [null, [Validators.required, Validators.min(0.01)]],
@@ -73,6 +110,7 @@ export class SaludFinancieraComponent implements OnInit {
     }
     this.cargarPerfil();
     this.cargarRegistroMensual();
+    this.cargarHistorial();
   }
 
   private cargarPerfil(): void {
@@ -146,6 +184,87 @@ export class SaludFinancieraComponent implements OnInit {
         this.agregandoEntrada.set(false);
       },
     });
+  }
+
+  // ── Eliminar entrada ─────────────────────────────────────
+  eliminarEntrada(indice: number): void {
+    if (this.eliminandoIndice() !== null) return;
+    this.eliminandoIndice.set(indice);
+    this.finanzasSvc.eliminarEntrada(indice).subscribe({
+      next: ({ registro, progreso }) => {
+        this.registro.set(registro);
+        this.progreso.set(progreso);
+        this.eliminandoIndice.set(null);
+        if (this.editandoIndice() === indice) this.editandoIndice.set(null);
+      },
+      error: () => this.eliminandoIndice.set(null),
+    });
+  }
+
+  // ── Editar entrada inline ────────────────────────────────
+  iniciarEdicion(indice: number, entrada: EntradaMensual): void {
+    this.editandoIndice.set(indice);
+    this.errorEdicion.set(null);
+    this.formEdicion.setValue({ monto: entrada.monto, descripcion: entrada.descripcion });
+  }
+
+  cancelarEdicion(): void {
+    this.editandoIndice.set(null);
+    this.errorEdicion.set(null);
+    this.formEdicion.reset();
+  }
+
+  guardarEdicion(): void {
+    if (this.formEdicion.invalid) return;
+    const indice = this.editandoIndice();
+    if (indice === null) return;
+    this.guardandoEdicion.set(true);
+    this.errorEdicion.set(null);
+    const { monto, descripcion } = this.formEdicion.value;
+    this.finanzasSvc.editarEntrada(indice, Number(monto), descripcion as string).subscribe({
+      next: ({ registro, progreso }) => {
+        this.registro.set(registro);
+        this.progreso.set(progreso);
+        this.editandoIndice.set(null);
+        this.guardandoEdicion.set(false);
+        this.formEdicion.reset();
+      },
+      error: () => {
+        this.errorEdicion.set('Error al guardar. Intentá de nuevo.');
+        this.guardandoEdicion.set(false);
+      },
+    });
+  }
+
+  // ── Historial ────────────────────────────────────────────
+  private cargarHistorial(): void {
+    this.finanzasSvc.obtenerHistorial().subscribe({
+      next: (registros) => this.historial.set(registros),
+      error: () => {},
+    });
+  }
+
+  nombreMesAnio(mes: number, anio: number): string {
+    return new Date(anio, mes - 1, 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+  }
+
+  porcentajeHistorial(r: RegistroMensual): number {
+    return r.limite_calculado > 0
+      ? Math.min(100, Math.round((r.total_registrado / r.limite_calculado) * 100))
+      : 0;
+  }
+
+  alertaHistorial(r: RegistroMensual): string {
+    const pct = this.porcentajeHistorial(r);
+    if (pct >= 100) return 'alerta--roja';
+    if (pct >= 80)  return 'alerta--naranja';
+    if (pct >= 50)  return 'alerta--amarilla';
+    return 'alerta--verde';
+  }
+
+  // ── Perfiles de ejemplo ──────────────────────────────────
+  cargarEjemplo(tipo: 'basico' | 'estandar' | 'alto'): void {
+    this.formPerfil.patchValue(EJEMPLOS[tipo] as any);
   }
 
   // ── Helpers ──────────────────────────────────────────────

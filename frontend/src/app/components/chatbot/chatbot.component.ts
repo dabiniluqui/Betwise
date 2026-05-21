@@ -11,20 +11,37 @@ interface Mensaje {
 
 const CHATBOT_URL = `${environment.apiUrl}/chatbot`;
 
-const SYSTEM_PROMPT = `Eres FutBot, un experto en fútbol argentino e internacional.
-Tu conocimiento abarca:
-- Historia del fútbol mundial y argentino (clubes, selecciones, competencias)
-- Resultados de partidos, estadísticas y tablas de posiciones
-- Jugadores legendarios y actuales
-- Técnicas, tácticas y formaciones
-- Copa del Mundo, Copa América, Champions League, Liga Profesional y todas las ligas del mundo
+const SYSTEM_PROMPT = `Sos FinBot, un asistente financiero personal que trabaja en BetWise Argentina, una plataforma de control financiero.
 
-REGLAS ESTRICTAS:
-1. SOLO responde preguntas relacionadas con fútbol.
-2. Si el usuario pregunta algo que NO sea fútbol, responde exactamente: "Solo puedo responder preguntas sobre fútbol. ¿Tenés alguna duda del deporte rey?"
-3. Responde siempre en español rioplatense (usá "vos", "che", "boludo" si es casual).
-4. Sé apasionado y entusiasta cuando hables de fútbol.
-5. Si no sabés un resultado exacto o dato muy reciente, acláralo pero aportá contexto histórico.`;
+Tu misión principal:
+- Ayudar a las personas a mejorar su salud financiera
+- DETECTAR cualquier señal de que alguien quiere apostar y DISUADIRLOS con empatía y datos reales
+- Educar sobre por qué las apuestas son dañinas para las finanzas personales
+
+SEÑALES DE INTENCIÓN DE APOSTAR (detectá estas y similares):
+- Palabras como: apostar, apuesta, bet, cuota, casa de apuestas, quiniela, casino, ruleta, tragamonedas, "doblo mi dinero", "seguro gano", "voy a ganar", "cuánto pongo"
+- Consultas sobre cuotas, probabilidades para ganar dinero, o "inversiones" en apuestas
+
+CUANDO DETECTÁS INTENCIÓN DE APOSTAR:
+1. No juzgues, respondé con comprensión ("Entiendo que parece tentador...")
+2. Explicá la expectativa negativa: las casas de apuestas siempre tienen ventaja matemática (entre 5% y 20% del dinero apostado va a la casa)
+3. Mencioná el efecto de pérdida y la falacia del jugador (creer que "ya tiene que salir")
+4. Mostrá un ejemplo concreto: "Si apostás $10.000 al mes durante un año, estadísticamente perdés entre $6.000 y $24.000 en ese período"
+5. Proponé alternativas: plazo fijo, fondo de emergencia, invertir en uno mismo (cursos, salud)
+6. Recordá que BetWise tiene herramientas para visualizar cuánto se pierde apostando
+
+TEMAS QUE PODÉS RESPONDER NORMALMENTE:
+- Presupuesto personal y familiar
+- Ahorro e inversión básica
+- Manejo de deudas
+- Conceptos financieros generales
+
+REGLAS:
+1. Respondé siempre en español rioplatense (usá "vos", sé cercano pero profesional)
+2. Sé empático, nunca agresivo ni condescendiente
+3. Usá datos y ejemplos concretos cuando expliques por qué apostar es dañino
+4. Si el tema no es financiero ni de apuestas, respondé: "Mi especialidad son las finanzas personales. ¿Querés que te ayude con tu presupuesto o con cómo manejar mejor tu plata?"
+5. Mantené respuestas concisas (máximo 4 párrafos)`;
 
 @Component({
   selector: 'app-chatbot',
@@ -35,26 +52,26 @@ REGLAS ESTRICTAS:
     <button
       class="chat-fab"
       (click)="toggleChat()"
-      [attr.aria-label]="abierto() ? 'Cerrar chat' : 'Abrir chat de fútbol'"
-      title="Chat de Fútbol">
-      <span *ngIf="!abierto()">⚽</span>
+      [attr.aria-label]="abierto() ? 'Cerrar chat' : 'Abrir asistente financiero'"
+      title="Asistente Financiero">
+      <span *ngIf="!abierto()">💰</span>
       <span *ngIf="abierto()">✕</span>
     </button>
 
     <!-- Panel del chat -->
     <div class="chat-panel" [class.chat-panel--visible]="abierto()">
       <div class="chat-header">
-        <span class="chat-header__icono">⚽</span>
+        <span class="chat-header__icono">💰</span>
         <div class="chat-header__info">
-          <strong>FutBot</strong>
-          <small>Experto en fútbol</small>
+          <strong>FinBot</strong>
+          <small>Asistente Financiero</small>
         </div>
       </div>
 
       <div class="chat-mensajes" #scrollContainer>
         <!-- Mensaje de bienvenida -->
         <div class="chat-burbuja chat-burbuja--asistente" *ngIf="mensajes().length === 0">
-          <p>¡Hola! Soy FutBot 🎙️ Preguntame lo que quieras sobre fútbol: historia, resultados, jugadores, tácticas... ¡lo que se te ocurra, che!</p>
+          <p>¡Hola! Soy FinBot 💰 Estoy acá para ayudarte a cuidar tu plata y mejorar tu salud financiera. ¿En qué te puedo ayudar hoy?</p>
         </div>
 
         <div
@@ -76,7 +93,7 @@ REGLAS ESTRICTAS:
           type="text"
           [(ngModel)]="mensajeActual"
           name="mensaje"
-          placeholder="Preguntá sobre fútbol..."
+          placeholder="Preguntame sobre finanzas personales..."
           [disabled]="cargando()"
           maxlength="500"
           autocomplete="off" />
@@ -97,7 +114,7 @@ REGLAS ESTRICTAS:
       width: 60px;
       height: 60px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #1a7a3c, #2ecc71);
+      background: linear-gradient(135deg, #1a4a7a, #3498db);
       border: none;
       cursor: pointer;
       font-size: 1.7rem;
@@ -121,7 +138,7 @@ REGLAS ESTRICTAS:
       width: 360px;
       max-height: 520px;
       background: #0f1923;
-      border: 1px solid #1e3a2f;
+      border: 1px solid #1e2f4a;
       border-radius: 16px;
       display: flex;
       flex-direction: column;
@@ -144,13 +161,13 @@ REGLAS ESTRICTAS:
       align-items: center;
       gap: 10px;
       padding: 14px 18px;
-      background: linear-gradient(135deg, #1a7a3c, #145f2e);
+      background: linear-gradient(135deg, #1a4a7a, #0f3460);
       border-radius: 16px 16px 0 0;
     }
     .chat-header__icono { font-size: 1.5rem; }
     .chat-header__info { display: flex; flex-direction: column; }
     .chat-header__info strong { color: #fff; font-size: 0.95rem; }
-    .chat-header__info small { color: #a8e6c2; font-size: 0.75rem; }
+    .chat-header__info small { color: #a8c8e6; font-size: 0.75rem; }
 
     .chat-mensajes {
       flex: 1;
@@ -160,7 +177,7 @@ REGLAS ESTRICTAS:
       flex-direction: column;
       gap: 10px;
       scrollbar-width: thin;
-      scrollbar-color: #1e3a2f transparent;
+      scrollbar-color: #1e2f4a transparent;
     }
 
     .chat-burbuja {
@@ -173,16 +190,16 @@ REGLAS ESTRICTAS:
     .chat-burbuja p { margin: 0; }
     .chat-burbuja--usuario {
       align-self: flex-end;
-      background: #1a7a3c;
-      color: #e8f5ee;
+      background: #1a4a7a;
+      color: #e8f0f5;
       border-bottom-right-radius: 4px;
     }
     .chat-burbuja--asistente {
       align-self: flex-start;
-      background: #182b20;
-      color: #d4edda;
+      background: #172033;
+      color: #d4e6ed;
       border-bottom-left-radius: 4px;
-      border: 1px solid #1e3a2f;
+      border: 1px solid #1e2f4a;
     }
 
     .chat-cargando {
@@ -194,7 +211,7 @@ REGLAS ESTRICTAS:
     .chat-cargando span {
       width: 7px;
       height: 7px;
-      background: #2ecc71;
+      background: #3498db;
       border-radius: 50%;
       display: inline-block;
       animation: bounce 1.2s infinite ease-in-out;
@@ -210,26 +227,26 @@ REGLAS ESTRICTAS:
       display: flex;
       gap: 8px;
       padding: 12px 14px;
-      border-top: 1px solid #1e3a2f;
+      border-top: 1px solid #1e2f4a;
       background: #0f1923;
     }
     .chat-input {
       flex: 1;
-      background: #182b20;
-      border: 1px solid #1e3a2f;
+      background: #172033;
+      border: 1px solid #1e2f4a;
       border-radius: 10px;
       padding: 9px 12px;
-      color: #e8f5ee;
+      color: #e8f0f5;
       font-size: 0.875rem;
       outline: none;
       transition: border-color 0.2s;
     }
-    .chat-input:focus { border-color: #2ecc71; }
-    .chat-input::placeholder { color: #4a7a5a; }
+    .chat-input:focus { border-color: #3498db; }
+    .chat-input::placeholder { color: #4a6a7a; }
     .chat-input:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .chat-enviar {
-      background: linear-gradient(135deg, #1a7a3c, #2ecc71);
+      background: linear-gradient(135deg, #1a4a7a, #3498db);
       border: none;
       border-radius: 10px;
       color: #fff;
@@ -281,7 +298,7 @@ export class ChatbotComponent implements AfterViewChecked {
     const body = {
       systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents: historial,
-      generationConfig: { temperature: 0.8, maxOutputTokens: 800 },
+      generationConfig: { temperature: 0.7, maxOutputTokens: 800 },
     };
 
     this.http.post<any>(CHATBOT_URL, body).subscribe({
@@ -291,7 +308,7 @@ export class ChatbotComponent implements AfterViewChecked {
         this.cargando.set(false);
       },
       error: (err) => {
-        console.error('FutBot error:', err);
+        console.error('FinBot error:', err);
         this.mensajes.update(msgs => [...msgs, { rol: 'asistente', texto: 'Hubo un error al conectar con Gemini. Revisá la consola para más detalles.' }]);
         this.cargando.set(false);
       },

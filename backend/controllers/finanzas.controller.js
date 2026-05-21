@@ -190,4 +190,131 @@ async function agregarEntrada(req, res, next) {
   }
 }
 
-module.exports = { calcular, obtenerPerfil, guardarPerfil, obtenerRegistroMensual, agregarEntrada };
+// ── DELETE /api/v1/finanzas/registro/entrada/:indice ─────────
+async function eliminarEntrada(req, res, next) {
+  try {
+    const indice = Number(req.params.indice);
+    const ahora  = new Date();
+    const mes    = ahora.getMonth() + 1;
+    const anio   = ahora.getFullYear();
+
+    const { data: registro, error: errBuscar } = await supabase
+      .from('registro_mensual')
+      .select('*')
+      .eq('usuario_id', req.usuario.id)
+      .eq('mes', mes)
+      .eq('anio', anio)
+      .single();
+
+    if (errBuscar || !registro) {
+      return res.status(404).json({ ok: false, mensaje: 'Registro no encontrado' });
+    }
+
+    const entradas = registro.entradas || [];
+    if (indice < 0 || indice >= entradas.length) {
+      return res.status(400).json({ ok: false, mensaje: 'Índice inválido' });
+    }
+
+    const nuevasEntradas  = entradas.filter((_, i) => i !== indice);
+    const nuevoTotal      = nuevasEntradas.reduce((sum, e) => sum + Number(e.monto), 0);
+
+    const { data, error } = await supabase
+      .from('registro_mensual')
+      .update({ entradas: nuevasEntradas, total_registrado: nuevoTotal })
+      .eq('id', registro.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    const progreso = finanzasService.calcularProgresoMensual(
+      data.limite_calculado, data.total_registrado, data.entradas
+    );
+
+    res.json({ ok: true, mensaje: 'Entrada eliminada', registro: data, progreso });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ── PUT /api/v1/finanzas/registro/entrada/:indice ────────────
+async function editarEntrada(req, res, next) {
+  try {
+    const indice      = Number(req.params.indice);
+    const { monto, descripcion } = req.body;
+    const ahora  = new Date();
+    const mes    = ahora.getMonth() + 1;
+    const anio   = ahora.getFullYear();
+
+    const { data: registro, error: errBuscar } = await supabase
+      .from('registro_mensual')
+      .select('*')
+      .eq('usuario_id', req.usuario.id)
+      .eq('mes', mes)
+      .eq('anio', anio)
+      .single();
+
+    if (errBuscar || !registro) {
+      return res.status(404).json({ ok: false, mensaje: 'Registro no encontrado' });
+    }
+
+    const entradas = registro.entradas || [];
+    if (indice < 0 || indice >= entradas.length) {
+      return res.status(400).json({ ok: false, mensaje: 'Índice inválido' });
+    }
+
+    entradas[indice] = {
+      ...entradas[indice],
+      monto:       Number(monto),
+      descripcion: descripcion.trim(),
+    };
+
+    const nuevoTotal = entradas.reduce((sum, e) => sum + Number(e.monto), 0);
+
+    const { data, error } = await supabase
+      .from('registro_mensual')
+      .update({ entradas, total_registrado: nuevoTotal })
+      .eq('id', registro.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    const progreso = finanzasService.calcularProgresoMensual(
+      data.limite_calculado, data.total_registrado, data.entradas
+    );
+
+    res.json({ ok: true, mensaje: 'Entrada actualizada', registro: data, progreso });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ── GET /api/v1/finanzas/historial ───────────────────────────
+async function obtenerHistorial(req, res, next) {
+  try {
+    const ahora     = new Date();
+    const mesActual = ahora.getMonth() + 1;
+    const anioActual = ahora.getFullYear();
+
+    const { data, error } = await supabase
+      .from('registro_mensual')
+      .select('id, mes, anio, limite_calculado, total_registrado, entradas')
+      .eq('usuario_id', req.usuario.id)
+      .order('anio', { ascending: false })
+      .order('mes',  { ascending: false });
+
+    if (error) throw error;
+
+    // Excluir el mes actual (ya se muestra en el registro activo)
+    const historial = (data || []).filter(
+      r => !(r.mes === mesActual && r.anio === anioActual)
+    );
+
+    res.json({ ok: true, registros: historial });
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = { calcular, obtenerPerfil, guardarPerfil, obtenerRegistroMensual, agregarEntrada, eliminarEntrada, editarEntrada, obtenerHistorial };
