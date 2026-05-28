@@ -33,9 +33,18 @@ export interface ResultadoFinanciero {
 }
 
 export interface EntradaMensual {
-  monto:       number;
-  descripcion: string;
-  fecha:       string;
+  monto:          number;
+  descripcion:    string;
+  fecha:          string;
+  resultado?:     'ganado' | 'perdido' | 'pendiente';
+  ganancia_neta?: number;
+}
+
+export interface EntradaConContexto extends EntradaMensual {
+  registroId:       string;
+  indiceEnRegistro: number;
+  mes:              number;
+  anio:             number;
 }
 
 export interface RegistroMensual {

@@ -71,4 +71,10 @@ export class FinanzasService {
       .get<{ ok: boolean; registros: RegistroMensual[] }>(`${API}/finanzas/historial`)
       .pipe(map((res) => res.registros));
   }
+
+  actualizarResultado(registroId: string, indice: number, resultado: string, ganancia_neta: number): Observable<RegistroMensual> {
+    return this.http
+      .patch<any>(`${API}/finanzas/registro/${registroId}/entrada/${indice}/resultado`, { resultado, ganancia_neta })
+      .pipe(map((res) => res.registro));
+  }
 }

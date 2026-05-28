@@ -64,6 +64,17 @@ async function guardarPerfil(req, res, next) {
     // Calcular y devolver resultados actualizados
     const resultado = finanzasService.calcularSaludFinanciera(data);
 
+    // Sincronizar limite_calculado del mes actual si ya existe un registro
+    const ahora      = new Date();
+    const mesActual  = ahora.getMonth() + 1;
+    const anioActual = ahora.getFullYear();
+    await supabase
+      .from('registro_mensual')
+      .update({ limite_calculado: resultado.limite_apuestas })
+      .eq('usuario_id', req.usuario.id)
+      .eq('mes', mesActual)
+      .eq('anio', anioActual);
+
     res.json({ ok: true, mensaje: 'Perfil guardado', perfil: data, resultado });
   } catch (error) {
     next(error);
@@ -75,26 +86,43 @@ async function obtenerRegistroMensual(req, res, next) {
   try {
     const { anio, mes } = req.params;
 
-    const { data, error } = await supabase
-      .from('registro_mensual')
-      .select('*')
-      .eq('usuario_id', req.usuario.id)
-      .eq('anio', Number(anio))
-      .eq('mes', Number(mes))
-      .single();
+    const [{ data: perfil }, { data, error }] = await Promise.all([
+      supabase.from('perfil_financiero').select('*').eq('usuario_id', req.usuario.id).single(),
+      supabase.from('registro_mensual').select('*')
+        .eq('usuario_id', req.usuario.id)
+        .eq('anio', Number(anio))
+        .eq('mes', Number(mes))
+        .single(),
+    ]);
 
     if (error && error.code !== 'PGRST116') throw error;
 
+    const limiteActual = perfil
+      ? finanzasService.calcularSaludFinanciera(perfil).limite_apuestas
+      : null;
+
+    let registroFinal = data || null;
+
+    if (registroFinal && limiteActual !== null && registroFinal.limite_calculado !== limiteActual) {
+      const { data: updated } = await supabase
+        .from('registro_mensual')
+        .update({ limite_calculado: limiteActual })
+        .eq('id', registroFinal.id)
+        .select()
+        .single();
+      if (updated) registroFinal = updated;
+    }
+
     let progreso = null;
-    if (data) {
+    if (registroFinal) {
       progreso = finanzasService.calcularProgresoMensual(
-        data.limite_calculado,
-        data.total_registrado,
-        data.entradas
+        registroFinal.limite_calculado,
+        registroFinal.total_registrado,
+        registroFinal.entradas
       );
     }
 
-    res.json({ ok: true, registro: data || null, progreso });
+    res.json({ ok: true, registro: registroFinal, progreso });
   } catch (error) {
     next(error);
   }
@@ -317,4 +345,48 @@ async function obtenerHistorial(req, res, next) {
   }
 }
 
-module.exports = { calcular, obtenerPerfil, guardarPerfil, obtenerRegistroMensual, agregarEntrada, eliminarEntrada, editarEntrada, obtenerHistorial };
+// ── PATCH /api/v1/finanzas/registro/:registroId/entrada/:indice/resultado ──
+async function actualizarResultadoEntrada(req, res, next) {
+  try {
+    const { registroId, indice } = req.params;
+    const { resultado, ganancia_neta } = req.body;
+
+    const { data: registro, error: errBuscar } = await supabase
+      .from('registro_mensual')
+      .select('*')
+      .eq('id', registroId)
+      .eq('usuario_id', req.usuario.id)
+      .single();
+
+    if (errBuscar || !registro) {
+      return res.status(404).json({ ok: false, mensaje: 'Registro no encontrado' });
+    }
+
+    const entradas = registro.entradas || [];
+    const idx = Number(indice);
+    if (idx < 0 || idx >= entradas.length) {
+      return res.status(400).json({ ok: false, mensaje: 'Índice inválido' });
+    }
+
+    entradas[idx] = {
+      ...entradas[idx],
+      resultado,
+      ganancia_neta: Number(ganancia_neta),
+    };
+
+    const { data, error } = await supabase
+      .from('registro_mensual')
+      .update({ entradas })
+      .eq('id', registroId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.json({ ok: true, mensaje: 'Resultado actualizado', registro: data });
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = { calcular, obtenerPerfil, guardarPerfil, obtenerRegistroMensual, agregarEntrada, eliminarEntrada, editarEntrada, obtenerHistorial, actualizarResultadoEntrada };

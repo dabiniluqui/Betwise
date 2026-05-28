@@ -10,6 +10,7 @@ const { verificarToken }  = require('../middlewares/auth.middleware');
 const {
   validarPerfilFinanciero,
   validarEntradaMensual,
+  validarResultadoEntrada,
 } = require('../middlewares/validate.middleware');
 
 const router = Router();
@@ -37,5 +38,8 @@ router.put('/registro/entrada/:indice', verificarToken, validarEntradaMensual, f
 
 // GET /api/v1/finanzas/historial — Requiere JWT
 router.get('/historial', verificarToken, finanzasController.obtenerHistorial);
+
+// PATCH /api/v1/finanzas/registro/:registroId/entrada/:indice/resultado — Requiere JWT
+router.patch('/registro/:registroId/entrada/:indice/resultado', verificarToken, validarResultadoEntrada, finanzasController.actualizarResultadoEntrada);
 
 module.exports = router;

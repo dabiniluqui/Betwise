@@ -13,6 +13,7 @@
       <p class="sf-header__descripcion">
         Guardá tu perfil económico y llevá el registro de cuánto destinás a apuestas cada mes.
       </p>
+      <p class="sf-header__frase">"El mejor capital es el que no se arriesga."</p>
     </header>
 
     <!-- ── LAYOUT PRINCIPAL ─────────────────────────────── -->
@@ -152,13 +153,18 @@
 
         <!-- Nota de concientización integrada al pie -->
         <div class="sf-nota-conciencia">
-          <span class="sf-nota-conciencia__icono">⚠️</span>
-          <div class="sf-nota-conciencia__texto">
-            <p>Esta herramienta no recomienda apostar. Tu capital merece ser protegido, no arriesgado.</p>
-            <a routerLink="/concientizacion" class="sf-nota-conciencia__link">
-              Conocé los riesgos →
-            </a>
+          <div class="sf-nota-conciencia__cabecera">
+            <span class="sf-nota-conciencia__icono">⚠️</span>
+            <strong class="sf-nota-conciencia__titulo">Las apuestas NO son una solución financiera</strong>
           </div>
+          <ul class="sf-nota-conciencia__lista">
+            <li>El juego no genera ingresos sostenibles — las casas siempre ganan a largo plazo.</li>
+            <li>Apostar capital disponible aumenta tu riesgo financiero real.</li>
+            <li>Si sentís que apostás más de lo que podés perder, buscá ayuda.</li>
+          </ul>
+          <a routerLink="/concientizacion" class="sf-nota-conciencia__link">
+            Conocé todos los riesgos y recursos de ayuda →
+          </a>
         </div>
 
       </section>
@@ -198,9 +204,13 @@
           <div class="limite-destacado">
             <p class="limite-destacado__etiqueta">🎯 Límite mensual para apuestas</p>
             <p class="limite-destacado__monto">{{ formatearPeso(r.limite_apuestas) }}</p>
-            <p class="limite-destacado__aviso">
-              Recordá: el mejor límite siempre es cero. Este es el máximo, no una recomendación.
-            </p>
+            <div class="limite-destacado__aviso-bloque">
+              <p class="limite-destacado__aviso-titulo">⛔ Recordá siempre:</p>
+              <p class="limite-destacado__aviso">
+                El mejor límite es <strong>cero</strong>. Este monto es el máximo matemático que tu presupuesto
+                toleraría — no una invitación a usarlo. Apostar no es recomendable como herramienta financiera.
+              </p>
+            </div>
           </div>
 
           <!-- Desglose -->
@@ -267,7 +277,7 @@
 
           <!-- Formulario para agregar entrada -->
           <div class="nueva-entrada" *ngIf="resultado()">
-            <h3 class="nueva-entrada__titulo">Registrar gasto</h3>
+            <h3 class="nueva-entrada__titulo">Registrar apuesta</h3>
             <form [formGroup]="formEntrada" (ngSubmit)="agregarEntrada()" novalidate>
               <div class="campo-doble">
                 <div class="campo-grupo">
@@ -285,12 +295,12 @@
                 </div>
               </div>
 
-              <p class="mensaje-exito" *ngIf="entradaExitosa()">✅ Gasto registrado</p>
+              <p class="mensaje-exito" *ngIf="entradaExitosa()">✅ Apuesta registrada</p>
               <p class="mensaje-error" *ngIf="errorEntrada()">{{ errorEntrada() }}</p>
 
               <button type="submit" class="btn btn--primario btn--completo"
                       [disabled]="agregandoEntrada() || formEntrada.invalid">
-                {{ agregandoEntrada() ? 'Registrando...' : '+ Agregar gasto' }}
+                {{ agregandoEntrada() ? 'Registrando...' : '+ Registrar apuesta' }}
               </button>
             </form>
           </div>
@@ -353,20 +363,68 @@
 
         </section>
 
-        <!-- Historial de meses anteriores -->
-        <section class="card historial-anterior" *ngIf="historial().length > 0">
-          <h2 class="card__titulo">Historial de meses anteriores</h2>
-          <p class="card__subtitulo">Resumen financiero de cada mes registrado</p>
+      </div>
+      <!-- /sf-columna-derecha -->
+
+    </div>
+    <!-- /sf-grid -->
+
+    <!-- Fila inferior: historial y resultados lado a lado -->
+    <div class="sf-fila-inferior">
+
+      <!-- Historial / gráfico de meses -->
+      <section class="card historial-anterior" *ngIf="hayDatosParaGrafico || resultado()">
+        <h2 class="card__titulo">Historial de meses</h2>
+        <p class="card__subtitulo">Resumen financiero de cada mes registrado</p>
+
+        <ng-container *ngIf="hayDatosParaGrafico; else sinDatosGrafico">
+          <div class="hist-chart">
+            <div class="hist-chart__leyenda">
+              <span class="hist-chart__leyenda-item">
+                <span class="hist-chart__leyenda-dot hist-chart__leyenda-dot--limite"></span>Límite calculado
+              </span>
+              <span class="hist-chart__leyenda-item">
+                <span class="hist-chart__leyenda-dot hist-chart__leyenda-dot--apostado"></span>Total apostado
+              </span>
+            </div>
+            <div class="hist-chart__area">
+              <div class="hist-chart__grupo" *ngFor="let r of mesesParaGrafico">
+                <div class="hist-chart__barras">
+                  <div class="hist-chart__barra hist-chart__barra--limite"
+                       [style.height.px]="alturaBarraPx(r.limite_calculado)"
+                       [title]="formatearPeso(r.limite_calculado)"></div>
+                  <div class="hist-chart__barra hist-chart__barra--apostado"
+                       [style.height.px]="alturaBarraPx(r.total_registrado)"
+                       [title]="formatearPeso(r.total_registrado)"></div>
+                </div>
+                <span class="hist-chart__mes-label">{{ nombreMesCorto(r.mes, r.anio) }}</span>
+              </div>
+            </div>
+            <div class="hist-chart__totales">
+              <div class="hist-chart__totales-fila">
+                <span class="hist-chart__totales-label">Límite acumulado:</span>
+                <span class="hist-chart__totales-valor hist-chart__totales-valor--limite">{{ formatearPeso(totalLimiteHistorial) }}</span>
+              </div>
+              <div class="hist-chart__totales-fila">
+                <span class="hist-chart__totales-label">Total apostado:</span>
+                <span class="hist-chart__totales-valor hist-chart__totales-valor--apostado">{{ formatearPeso(totalApostadoHistorial) }}</span>
+              </div>
+              <div class="hist-chart__totales-balance"
+                   [ngClass]="totalApostadoHistorial <= totalLimiteHistorial ? 'hist-chart__totales-balance--ok' : 'hist-chart__totales-balance--excedido'">
+                <span *ngIf="totalApostadoHistorial <= totalLimiteHistorial">✅ Estás dentro de tu límite acumulado</span>
+                <span *ngIf="totalApostadoHistorial > totalLimiteHistorial">🚨 Superaste tu límite acumulado por {{ formatearPeso(totalApostadoHistorial - totalLimiteHistorial) }}</span>
+              </div>
+            </div>
+          </div>
+
           <div class="historial-anterior__lista">
-            <div class="historial-anterior__card" *ngFor="let r of historial()">
+            <div class="historial-anterior__card" *ngFor="let r of mesesParaGrafico">
               <div class="historial-anterior__mes">
                 <span class="historial-anterior__nombre">{{ nombreMesAnio(r.mes, r.anio) | titlecase }}</span>
                 <span class="historial-anterior__entradas">{{ r.entradas?.length || 0 }} registro{{ (r.entradas?.length || 0) !== 1 ? 's' : '' }}</span>
               </div>
               <div class="historial-anterior__numeros">
-                <span class="historial-anterior__total" [ngClass]="alertaHistorial(r)">
-                  {{ formatearPeso(r.total_registrado) }}
-                </span>
+                <span class="historial-anterior__total" [ngClass]="alertaHistorial(r)">{{ formatearPeso(r.total_registrado) }}</span>
                 <span class="historial-anterior__de">de</span>
                 <span class="historial-anterior__limite">{{ formatearPeso(r.limite_calculado) }}</span>
               </div>
@@ -380,12 +438,121 @@
               </div>
             </div>
           </div>
-        </section>
-      </div>
-      <!-- /sf-columna-derecha -->
+        </ng-container>
+
+        <ng-template #sinDatosGrafico>
+          <p class="sin-registro">Aún no hay datos para mostrar. Guardá tu perfil y registrá tu primera apuesta.</p>
+        </ng-template>
+      </section>
+
+      <!-- Panel de resultados de apuestas -->
+      <section class="card resultados-panel" *ngIf="resultado()">
+        <h2 class="card__titulo">Resultados de apuestas</h2>
+        <p class="card__subtitulo">Marcá si ganaste o perdiste cada apuesta registrada</p>
+
+        <!-- Empty state -->
+        <div class="resultados-empty" *ngIf="todasLasEntradas.length === 0">
+          <p>Aún no registraste ninguna apuesta. Usá el formulario de arriba para comenzar.</p>
+        </div>
+
+        <!-- Lista de entradas -->
+        <div class="resultados-lista" *ngIf="todasLasEntradas.length > 0">
+          <ng-container *ngFor="let e of todasLasEntradas">
+            <div class="resultado-item" [ngClass]="{
+              'resultado-item--ganado':    e.resultado === 'ganado',
+              'resultado-item--perdido':   e.resultado === 'perdido',
+              'resultado-item--pendiente': !e.resultado || e.resultado === 'pendiente'
+            }">
+              <!-- Modo vista -->
+              <ng-container *ngIf="editandoResultado() !== claveEntrada(e.registroId, e.indiceEnRegistro)">
+                <div class="resultado-item__info">
+                  <span class="resultado-item__desc">{{ e.descripcion }}</span>
+                  <span class="resultado-item__meta">
+                    {{ nombreMesAnio(e.mes, e.anio) | titlecase }} &middot; Apostado: {{ formatearPeso(e.monto) }}
+                  </span>
+                </div>
+                <div class="resultado-item__derecha">
+                  <span class="resultado-badge" [ngClass]="{
+                    'resultado-badge--ganado':    e.resultado === 'ganado',
+                    'resultado-badge--perdido':   e.resultado === 'perdido',
+                    'resultado-badge--pendiente': !e.resultado || e.resultado === 'pendiente'
+                  }">
+                    <ng-container *ngIf="e.resultado === 'ganado'">✅ +{{ formatearPeso(e.ganancia_neta || 0) }}</ng-container>
+                    <ng-container *ngIf="e.resultado === 'perdido'">❌ {{ formatearPeso(e.ganancia_neta || 0) }}</ng-container>
+                    <ng-container *ngIf="!e.resultado || e.resultado === 'pendiente'">⏳ Pendiente</ng-container>
+                  </span>
+                  <button type="button" class="btn btn--ghost btn--xs"
+                          (click)="iniciarResultado(claveEntrada(e.registroId, e.indiceEnRegistro), e)">
+                    {{ (!e.resultado || e.resultado === 'pendiente') ? 'Registrar resultado' : 'Editar' }}
+                  </button>
+                </div>
+              </ng-container>
+
+              <!-- Modo edición inline (sin reactive form) -->
+              <div class="resultado-form-wrap" *ngIf="editandoResultado() === claveEntrada(e.registroId, e.indiceEnRegistro)">
+                <div class="resultado-form-desc">
+                  <strong>{{ e.descripcion }}</strong>
+                  <span class="resultado-item__meta">Apostado: {{ formatearPeso(e.monto) }}</span>
+                </div>
+                <form (ngSubmit)="guardarResultado(e.registroId, e.indiceEnRegistro)" novalidate class="resultado-form">
+                  <div class="resultado-form__opciones">
+                    <button type="button" class="resultado-radio"
+                            [ngClass]="{'resultado-radio--activo': resultadoSeleccionado() === 'ganado'}"
+                            (click)="resultadoSeleccionado.set('ganado')">
+                      ✅ Gané
+                    </button>
+                    <button type="button" class="resultado-radio resultado-radio--perdido"
+                            [ngClass]="{'resultado-radio--activo': resultadoSeleccionado() === 'perdido'}"
+                            (click)="resultadoSeleccionado.set('perdido')">
+                      ❌ Perdí
+                    </button>
+                  </div>
+                  <div class="campo-grupo">
+                    <label class="campo-label">
+                      {{ resultadoSeleccionado() === 'perdido' ? '¿Cuánto perdiste?' : '¿Cuánto ganaste (neto)?' }}
+                    </label>
+                    <div class="campo-input-wrap">
+                      <span class="campo-prefijo">$</span>
+                      <input type="number" class="campo-input"
+                             [value]="montoResultadoInput()"
+                             (input)="montoResultadoInput.set(+$any($event.target).value)"
+                             placeholder="0" min="0" step="0.01" />
+                    </div>
+                  </div>
+                  <p class="mensaje-error" *ngIf="errorResultado()">{{ errorResultado() }}</p>
+                  <div class="resultado-form__acciones">
+                    <button type="submit" class="btn btn--primario"
+                            [disabled]="guardandoResultado() || !resultadoSeleccionado() || montoResultadoInput() == null">
+                      {{ guardandoResultado() ? 'Guardando...' : 'Guardar' }}
+                    </button>
+                    <button type="button" class="btn btn--ghost" (click)="cancelarResultado()">Cancelar</button>
+                  </div>
+                </form>
+              </div>
+
+            </div>
+          </ng-container>
+        </div>
+
+        <!-- Total acumulado -->
+        <div class="resultados-total" *ngIf="todasLasEntradas.length > 0">
+          <div class="resultados-total__stats">
+            <span class="resultados-stat resultados-stat--ganado">✅ {{ cantidadGanadas }} ganadas</span>
+            <span class="resultados-stat resultados-stat--perdido">❌ {{ cantidadPerdidas }} perdidas</span>
+            <span class="resultados-stat resultados-stat--pendiente">⏳ {{ cantidadPendientes }} pendientes</span>
+          </div>
+          <div class="resultados-total__neto"
+               [ngClass]="gananciaAcumulada >= 0 ? 'resultados-total__neto--positivo' : 'resultados-total__neto--negativo'">
+            <span class="resultados-total__label">Balance neto acumulado</span>
+            <span class="resultados-total__monto">
+              {{ gananciaAcumulada >= 0 ? '+' : '' }}{{ formatearPeso(gananciaAcumulada) }}
+            </span>
+          </div>
+        </div>
+      </section>
 
     </div>
-    <!-- /sf-grid -->
+    <!-- /sf-fila-inferior -->
 
   </div>
 </div>

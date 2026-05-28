@@ -47,6 +47,15 @@
   margin: 14px 0 10px;
 }
 .sf-header__descripcion { font-size: 0.95rem; color: var(--color-texto-suave); }
+.sf-header__frase {
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--color-acento);
+  font-weight: 600;
+  margin-top: 14px;
+  letter-spacing: 0.01em;
+  opacity: 0.9;
+}
 
 .sf-grid {
   display: grid;
@@ -58,6 +67,15 @@
 @media (max-width: 900px) { .sf-grid { grid-template-columns: 1fr; } }
 
 .sf-columna-derecha { display: flex; flex-direction: column; gap: 20px; }
+
+.sf-fila-inferior {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 24px;
+  align-items: start;
+}
+@media (max-width: 900px) { .sf-fila-inferior { grid-template-columns: 1fr; } }
 
 /* ── CARD ──────────────────────────────────────────────── */
 .card {
@@ -107,7 +125,8 @@
   transition: border-color 0.2s;
   -moz-appearance: textfield;
 }
-.campo-select { padding-left: 12px; cursor: pointer; }
+.campo-select { padding-left: 12px; cursor: pointer; background-color: #1e2330; -webkit-appearance: none; appearance: none; }
+.campo-select option { background-color: #1e2330; color: #00e5a0; }
 .campo-input:focus, .campo-select:focus { border-color: var(--color-acento); background: rgba(0,229,160,0.04); }
 .campo-input::-webkit-outer-spin-button,
 .campo-input::-webkit-inner-spin-button { -webkit-appearance: none; }
@@ -226,30 +245,47 @@
   white-space: nowrap;
 }
 
-/* ── NOTA DE CONCIENTIZACIÓN (pie del form) ──────────────── */
+/* ── NOTA DE CONCIENTIZACIÓN AMPLIADA (pie del form) ─────── */
 .sf-nota-conciencia {
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  margin-top: 8px;
-  padding: 14px 16px;
-  background: rgba(255, 130, 0, 0.05);
-  border-left: 3px solid rgba(255, 130, 0, 0.5);
-  border-radius: 0 10px 10px 0;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+  padding: 20px 20px 18px;
+  background: rgba(255, 130, 0, 0.07);
+  border: 1px solid rgba(255, 130, 0, 0.3);
+  border-radius: 14px;
 }
-.sf-nota-conciencia__icono { font-size: 1rem; flex-shrink: 0; line-height: 1.5; }
-.sf-nota-conciencia__texto { display: flex; flex-direction: column; gap: 4px; }
-.sf-nota-conciencia__texto p {
-  font-size: 0.78rem;
-  color: var(--color-texto-suave);
-  line-height: 1.5;
+.sf-nota-conciencia__cabecera {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sf-nota-conciencia__icono { font-size: 1.4rem; flex-shrink: 0; line-height: 1; }
+.sf-nota-conciencia__titulo {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ff8200;
+  line-height: 1.3;
+}
+.sf-nota-conciencia__lista {
   margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sf-nota-conciencia__lista li {
+  font-size: 0.82rem;
+  color: var(--color-texto-suave);
+  line-height: 1.55;
 }
 .sf-nota-conciencia__link {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: var(--color-advertencia);
   text-decoration: none;
   font-weight: 600;
+  align-self: flex-start;
 }
 .sf-nota-conciencia__link:hover { text-decoration: underline; }
 
@@ -306,13 +342,30 @@
 }
 
 /* ── LIMITE DESTACADO (mejorado) ─────────────────────────── */
-.limite-destacado__aviso {
-  font-size: 0.72rem;
-  color: var(--color-texto-muy-suave);
-  line-height: 1.5;
-  margin: 0;
-  font-style: italic;
+.limite-destacado__aviso-bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  background: rgba(255, 79, 109, 0.07);
+  border-radius: 8px;
+  border-left: 3px solid rgba(255, 79, 109, 0.4);
 }
+.limite-destacado__aviso-titulo {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-peligro);
+  margin: 0;
+}
+.limite-destacado__aviso {
+  font-size: 0.78rem;
+  color: var(--color-texto-suave);
+  line-height: 1.55;
+  margin: 0;
+}
+.limite-destacado__aviso strong { color: var(--color-texto); }
 
 /* ── MENSAJES ────────────────────────────────────────────── */
 .mensaje-exito {
@@ -505,3 +558,195 @@
   text-align: right;
   flex-shrink: 0;
 }
+
+/* ── GRÁFICO DE BARRAS – HISTORIAL ─────────────────────── */
+.hist-chart {
+  margin: 16px 0 20px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--color-borde);
+  border-radius: 14px;
+  padding: 16px 16px 12px;
+}
+.hist-chart__leyenda { display: flex; gap: 20px; margin-bottom: 14px; }
+.hist-chart__leyenda-item { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--color-texto-suave); }
+.hist-chart__leyenda-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.hist-chart__leyenda-dot--limite   { background: #00e5a0; }
+.hist-chart__leyenda-dot--apostado { background: #ff4f6d; }
+
+.hist-chart__area {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  height: 116px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.hist-chart__grupo { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; min-width: 36px; }
+.hist-chart__barras { display: flex; align-items: flex-end; gap: 3px; height: 100px; }
+.hist-chart__barra { width: 14px; border-radius: 3px 3px 0 0; min-height: 2px; transition: height 0.4s cubic-bezier(0.16,1,0.3,1); }
+.hist-chart__barra--limite   { background: #00e5a0; }
+.hist-chart__barra--apostado { background: #ff4f6d; }
+.hist-chart__mes-label { font-size: 0.62rem; color: var(--color-texto-muy-suave); text-transform: capitalize; white-space: nowrap; }
+
+.hist-chart__totales {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-borde);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.hist-chart__totales-fila { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--color-texto-suave); }
+.hist-chart__totales-valor { font-family: var(--fuente-display); font-weight: 700; }
+.hist-chart__totales-valor--limite   { color: #00e5a0; }
+.hist-chart__totales-valor--apostado { color: #ff4f6d; }
+.hist-chart__totales-balance { margin-top: 6px; font-size: 0.8rem; font-weight: 600; text-align: center; padding: 8px 12px; border-radius: 8px; }
+.hist-chart__totales-balance--ok       { background: rgba(0,229,160,0.08); color: #00e5a0; border: 1px solid rgba(0,229,160,0.2); }
+.hist-chart__totales-balance--excedido { background: rgba(255,79,109,0.08); color: #ff4f6d; border: 1px solid rgba(255,79,109,0.2); }
+
+/* ── PANEL DE RESULTADOS DE APUESTAS ───────────────────── */
+.resultados-panel .card__subtitulo {
+  font-size: 0.82rem;
+  color: var(--color-texto-suave);
+  margin: -12px 0 20px;
+}
+
+.resultados-empty {
+  font-size: 0.85rem;
+  color: var(--color-texto-muy-suave);
+  text-align: center;
+  padding: 16px 0;
+}
+
+.resultados-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.resultado-item {
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(255,255,255,0.02);
+  transition: border-color 0.2s;
+  flex-wrap: wrap;
+}
+.resultado-item--ganado  { border-color: rgba(0,229,160,0.35); background: rgba(0,229,160,0.04); }
+.resultado-item--perdido { border-color: rgba(255,79,109,0.35); background: rgba(255,79,109,0.04); }
+
+.resultado-item__info { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.resultado-item__desc { font-size: 0.9rem; font-weight: 600; color: var(--color-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.resultado-item__meta { font-size: 0.72rem; color: var(--color-texto-muy-suave); }
+
+.resultado-item__derecha {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.resultado-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.resultado-badge--ganado   { background: rgba(0,229,160,0.12); color: #00e5a0; border: 1px solid rgba(0,229,160,0.3); }
+.resultado-badge--perdido  { background: rgba(255,79,109,0.12); color: #ff4f6d; border: 1px solid rgba(255,79,109,0.3); }
+.resultado-badge--pendiente { background: rgba(255,255,255,0.06); color: var(--color-texto-suave); border: 1px solid var(--color-borde); }
+
+/* Formulario inline de resultado */
+.resultado-form-wrap { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+.resultado-form-desc { display: flex; flex-direction: column; gap: 2px; }
+.resultado-form-desc strong { font-size: 0.9rem; color: var(--color-texto); }
+
+.resultado-form { display: flex; flex-direction: column; gap: 12px; }
+
+.resultado-form__opciones {
+  display: flex;
+  gap: 10px;
+}
+
+.resultado-radio {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--color-borde);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+  background: transparent;
+  transition: all 0.15s;
+  user-select: none;
+  font-family: inherit;
+}
+.resultado-radio:hover { border-color: #00e5a0; color: #00e5a0; }
+.resultado-radio--activo { border-color: #00e5a0; color: #00e5a0; background: rgba(0,229,160,0.08); }
+.resultado-radio--perdido:hover { border-color: #ff4f6d; color: #ff4f6d; }
+.resultado-radio--perdido.resultado-radio--activo { border-color: #ff4f6d; color: #ff4f6d; background: rgba(255,79,109,0.08); }
+
+.resultado-form__acciones { display: flex; gap: 10px; }
+
+.btn--xs { font-size: 0.75rem; padding: 5px 12px; }
+
+/* Total acumulado */
+.resultados-total {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-borde);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.resultados-total__stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.resultados-stat {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+.resultados-stat--ganado   { background: rgba(0,229,160,0.1); color: #00e5a0; }
+.resultados-stat--perdido  { background: rgba(255,79,109,0.1); color: #ff4f6d; }
+.resultados-stat--pendiente { background: rgba(255,255,255,0.06); color: var(--color-texto-suave); }
+
+.resultados-total__neto {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-radius: 12px;
+  gap: 12px;
+}
+.resultados-total__neto--positivo { background: rgba(0,229,160,0.08); border: 1px solid rgba(0,229,160,0.25); }
+.resultados-total__neto--negativo { background: rgba(255,79,109,0.08); border: 1px solid rgba(255,79,109,0.25); }
+
+.resultados-total__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+}
+
+.resultados-total__monto {
+  font-family: var(--fuente-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+.resultados-total__neto--positivo .resultados-total__monto { color: #00e5a0; }
+.resultados-total__neto--negativo .resultados-total__monto { color: #ff4f6d; }

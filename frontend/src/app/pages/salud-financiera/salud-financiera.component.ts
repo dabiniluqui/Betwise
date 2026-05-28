@@ -14,6 +14,7 @@ import {
   RegistroMensual,
   ProgresoMensual,
   EntradaMensual,
+  EntradaConContexto,
 } from '../../core/models/usuario.model';
 
 const EJEMPLOS: Record<string, Partial<PerfilFinanciero>> = {
@@ -74,6 +75,13 @@ export class SaludFinancieraComponent implements OnInit {
 
   // ── Historial de meses anteriores ────────────────────────
   historial        = signal<RegistroMensual[]>([]);
+
+  // ── Estado del panel de resultados ───────────────────────
+  editandoResultado     = signal<string | null>(null);
+  guardandoResultado    = signal(false);
+  errorResultado        = signal<string | null>(null);
+  resultadoSeleccionado = signal<'ganado' | 'perdido' | null>(null);
+  montoResultadoInput   = signal<number | null>(null);
 
   mesActual  = new Date().getMonth() + 1;
   anioActual = new Date().getFullYear();
@@ -260,6 +268,139 @@ export class SaludFinancieraComponent implements OnInit {
     if (pct >= 80)  return 'alerta--naranja';
     if (pct >= 50)  return 'alerta--amarilla';
     return 'alerta--verde';
+  }
+
+  // ── Computed helpers para el gráfico de barras del historial ──
+
+  get mesesParaGrafico(): RegistroMensual[] {
+    const pasados = [...this.historial()].reverse();
+    const reg = this.registro();
+    const res = this.resultado();
+    if (reg) {
+      return [...pasados, reg];
+    } else if (res) {
+      return [...pasados, {
+        id: 'current-placeholder',
+        mes: this.mesActual,
+        anio: this.anioActual,
+        limite_calculado: res.limite_apuestas,
+        total_registrado: 0,
+        entradas: [],
+      } as RegistroMensual];
+    }
+    return pasados;
+  }
+
+  get hayDatosParaGrafico(): boolean {
+    return this.mesesParaGrafico.length > 0;
+  }
+
+  get totalLimiteHistorial(): number {
+    return this.mesesParaGrafico.reduce((sum, r) => sum + (r.limite_calculado || 0), 0);
+  }
+
+  get totalApostadoHistorial(): number {
+    return this.mesesParaGrafico.reduce((sum, r) => sum + (r.total_registrado || 0), 0);
+  }
+
+  get maxValorHistorial(): number {
+    const vals = this.mesesParaGrafico.flatMap(r => [r.limite_calculado || 0, r.total_registrado || 0]);
+    return vals.length ? Math.max(...vals) : 1;
+  }
+
+  alturaBarraPx(valor: number): number {
+    const max = this.maxValorHistorial;
+    if (!max) return 0;
+    return Math.round((valor / max) * 100);
+  }
+
+  // ── Computed helpers para el panel de resultados ──────────
+
+  get todasLasEntradas(): EntradaConContexto[] {
+    const result: EntradaConContexto[] = [];
+    for (const r of this.historial()) {
+      (r.entradas || []).forEach((e, i) =>
+        result.push({ ...e, registroId: r.id, indiceEnRegistro: i, mes: r.mes, anio: r.anio })
+      );
+    }
+    const reg = this.registro();
+    if (reg) {
+      (reg.entradas || []).forEach((e, i) =>
+        result.push({ ...e, registroId: reg.id, indiceEnRegistro: i, mes: reg.mes, anio: reg.anio })
+      );
+    }
+    return result.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+  }
+
+  get gananciaAcumulada(): number {
+    return this.todasLasEntradas
+      .filter(e => e.resultado && e.resultado !== 'pendiente' && e.ganancia_neta != null)
+      .reduce((sum, e) => sum + (e.ganancia_neta || 0), 0);
+  }
+
+  get cantidadGanadas(): number {
+    return this.todasLasEntradas.filter(e => e.resultado === 'ganado').length;
+  }
+
+  get cantidadPerdidas(): number {
+    return this.todasLasEntradas.filter(e => e.resultado === 'perdido').length;
+  }
+
+  get cantidadPendientes(): number {
+    return this.todasLasEntradas.filter(e => !e.resultado || e.resultado === 'pendiente').length;
+  }
+
+  iniciarResultado(key: string, e: EntradaConContexto): void {
+    this.editandoResultado.set(key);
+    this.errorResultado.set(null);
+    this.resultadoSeleccionado.set(
+      e.resultado && e.resultado !== 'pendiente' ? e.resultado : null
+    );
+    this.montoResultadoInput.set(
+      e.ganancia_neta != null ? Math.abs(e.ganancia_neta) : e.monto
+    );
+  }
+
+  cancelarResultado(): void {
+    this.editandoResultado.set(null);
+    this.errorResultado.set(null);
+    this.resultadoSeleccionado.set(null);
+    this.montoResultadoInput.set(null);
+  }
+
+  guardarResultado(registroId: string, indice: number): void {
+    const resultado = this.resultadoSeleccionado();
+    const monto = this.montoResultadoInput();
+    if (!resultado || monto == null) return;
+    this.guardandoResultado.set(true);
+    this.errorResultado.set(null);
+    const neto = resultado === 'perdido' ? -Math.abs(monto) : Math.abs(monto);
+    this.finanzasSvc.actualizarResultado(registroId, indice, resultado, neto).subscribe({
+      next: (registroActualizado) => {
+        const reg = this.registro();
+        if (reg && reg.id === registroId) {
+          this.registro.set(registroActualizado);
+        } else {
+          this.historial.update(h => h.map(r => r.id === registroId ? registroActualizado : r));
+        }
+        this.editandoResultado.set(null);
+        this.guardandoResultado.set(false);
+      },
+      error: () => {
+        this.errorResultado.set('Error al guardar. Intentá de nuevo.');
+        this.guardandoResultado.set(false);
+      },
+    });
+  }
+
+  claveEntrada(registroId: string, indice: number): string {
+    return `${registroId}_${indice}`;
+  }
+
+  nombreMesCorto(mes: number, anio: number): string {
+    return new Date(anio, mes - 1, 1)
+      .toLocaleDateString('es-AR', { month: 'short' })
+      .replace('.', '');
   }
 
   // ── Perfiles de ejemplo ──────────────────────────────────

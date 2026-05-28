@@ -75,9 +75,24 @@ function validarEntradaMensual(req, res, next) {
   next();
 }
 
+function validarResultadoEntrada(req, res, next) {
+  const { resultado, ganancia_neta } = req.body;
+
+  if (!['ganado', 'perdido'].includes(resultado)) {
+    return res.status(400).json({ ok: false, mensaje: 'resultado debe ser "ganado" o "perdido"' });
+  }
+
+  if (ganancia_neta === undefined || ganancia_neta === null || isNaN(Number(ganancia_neta))) {
+    return res.status(400).json({ ok: false, mensaje: 'ganancia_neta debe ser un número' });
+  }
+
+  next();
+}
+
 module.exports = {
   validarRegistro,
   validarLogin,
   validarPerfilFinanciero,
   validarEntradaMensual,
+  validarResultadoEntrada,
 };
