@@ -5,7 +5,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule }    from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FinanzasService } from '../../services/finanzas.service';
 import {
@@ -41,7 +41,7 @@ const EJEMPLOS: Record<string, Partial<PerfilFinanciero>> = {
 @Component({
   selector: 'app-salud-financiera',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
   templateUrl: './salud-financiera.component.html',
   styleUrls: ['./salud-financiera.component.css'],
 })
