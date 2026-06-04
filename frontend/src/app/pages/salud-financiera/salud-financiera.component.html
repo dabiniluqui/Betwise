@@ -13,7 +13,7 @@
       <p class="sf-header__descripcion">
         Guardá tu perfil económico y llevá el registro de cuánto destinás a apuestas cada mes.
       </p>
-      <p class="sf-header__frase">"El mejor capital es el que no se arriesga."</p>
+      <p class="sf-header__frase">"Si anotaras cada peso perdido, entenderías que el verdadero premio es dejar de apostar."</p>
     </header>
 
     <!-- ── LAYOUT PRINCIPAL ─────────────────────────────── -->
@@ -133,13 +133,28 @@
             <span class="sf-seccion-label__linea"></span>
           </div>
           <div class="campo-grupo">
-            <select id="sf-ahorro" class="campo-select" formControlName="nivel_ahorro">
-              <option value="bajo_5">Bajo — 5%</option>
-              <option value="moderado_10">Moderado — 10%</option>
-              <option value="recomendado_20">Recomendado — 20% ✓</option>
-              <option value="alto_30">Alto — 30%</option>
-              <option value="agresivo_50">Agresivo — 50%</option>
-            </select>
+            <div class="ahorro-opciones">
+              <label class="ahorro-opcion ahorro-opcion--rojo-fuerte">
+                <input type="radio" formControlName="nivel_ahorro" value="bajo_5">
+                <span class="ahorro-opcion__label">Bajo<br><strong>5%</strong></span>
+              </label>
+              <label class="ahorro-opcion ahorro-opcion--naranja">
+                <input type="radio" formControlName="nivel_ahorro" value="moderado_10">
+                <span class="ahorro-opcion__label">Moderado<br><strong>10%</strong></span>
+              </label>
+              <label class="ahorro-opcion ahorro-opcion--amarillo">
+                <input type="radio" formControlName="nivel_ahorro" value="recomendado_20">
+                <span class="ahorro-opcion__label">Recomendado<br><strong>20% ✓</strong></span>
+              </label>
+              <label class="ahorro-opcion ahorro-opcion--verde-suave">
+                <input type="radio" formControlName="nivel_ahorro" value="alto_30">
+                <span class="ahorro-opcion__label">Alto<br><strong>30%</strong></span>
+              </label>
+              <label class="ahorro-opcion ahorro-opcion--verde-fuerte">
+                <input type="radio" formControlName="nivel_ahorro" value="agresivo_50">
+                <span class="ahorro-opcion__label">Agresivo<br><strong>50%</strong></span>
+              </label>
+            </div>
           </div>
 
           <p class="mensaje-exito" *ngIf="perfilGuardado()">✅ Perfil guardado correctamente</p>
