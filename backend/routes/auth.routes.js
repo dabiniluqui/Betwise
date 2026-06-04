@@ -4,7 +4,7 @@
 // ============================================================
 
 const { Router } = require('express');
-const authController  = require('../controllers/auth.controller');
+const authController = require('../controllers/auth.controller');
 const { validarRegistro, validarLogin } = require('../middlewares/validate.middleware');
 const { verificarToken } = require('../middlewares/auth.middleware');
 
@@ -15,6 +15,9 @@ router.post('/register', validarRegistro, authController.register);
 
 // POST /api/v1/auth/login
 router.post('/login', validarLogin, authController.login);
+
+// POST /api/v1/auth/google
+router.post('/google', authController.googleAuth);
 
 // GET  /api/v1/auth/me  — Ruta protegida: requiere JWT
 router.get('/me', verificarToken, authController.me);

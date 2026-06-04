@@ -2,11 +2,15 @@
 // pages/login/login.component.ts
 // ============================================================
 
-import { Component, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, inject, NgZone, signal, ViewChild } from '@angular/core';
 import { CommonModule }    from '@angular/common';
 import { RouterLink }      from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AuthService }     from '../../services/auth.service';
+
+declare const google: any;
+
+const GOOGLE_CLIENT_ID = '713987670018-o7c6onu3a13t1u0ekvg0e0jh3surrgou.apps.googleusercontent.com';
 
 @Component({
   selector: 'app-login',
@@ -41,6 +45,10 @@ import { AuthService }     from '../../services/auth.service';
             {{ cargando() ? 'Ingresando...' : 'Ingresar →' }}
           </button>
         </form>
+
+        <div class="divisor"><span>o</span></div>
+
+        <div #googleBtn class="google-btn-container"></div>
       </div>
     </div>
   `,
@@ -79,6 +87,20 @@ import { AuthService }     from '../../services/auth.service';
     }
     .auth-card__subtitulo { font-size: 0.88rem; color: var(--color-texto-suave); margin: 0; }
     .auth-card__subtitulo a { color: var(--color-acento); }
+    .google-btn-container { width: 100%; display: flex; justify-content: center; }
+    .divisor {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--color-texto-muy-suave);
+      font-size: 0.78rem;
+    }
+    .divisor::before, .divisor::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--color-borde);
+    }
     .campo-grupo { display: flex; flex-direction: column; gap: 6px; }
     .campo-label { font-size: 0.78rem; color: var(--color-texto-suave); font-weight: 500; }
     .campo-input-auth {
@@ -104,9 +126,12 @@ import { AuthService }     from '../../services/auth.service';
     }
   `],
 })
-export class LoginComponent {
+export class LoginComponent implements AfterViewInit {
+  @ViewChild('googleBtn') googleBtnRef!: ElementRef;
+
   private fb          = inject(FormBuilder);
   private authService = inject(AuthService);
+  private ngZone      = inject(NgZone);
 
   cargando = signal(false);
   error    = signal<string | null>(null);
@@ -115,6 +140,43 @@ export class LoginComponent {
     email:    ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
   });
+
+  ngAfterViewInit() {
+    this.initGoogleButton();
+  }
+
+  private initGoogleButton() {
+    if (typeof (window as any)['google'] === 'undefined') {
+      setTimeout(() => this.initGoogleButton(), 100);
+      return;
+    }
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: (response: any) => this.ngZone.run(() => this.handleGoogleResponse(response)),
+    });
+    google.accounts.id.renderButton(this.googleBtnRef.nativeElement, {
+      type: 'standard',
+      theme: 'outline',
+      size: 'large',
+      text: 'signin_with',
+      locale: 'es',
+      width: 340,
+    });
+  }
+
+  private handleGoogleResponse(response: any) {
+    this.cargando.set(true);
+    this.error.set(null);
+    this.authService.loginConGoogle(response.credential).subscribe({
+      error: (err) => {
+        const msg = err.status === 0
+          ? 'No se puede conectar al servidor.'
+          : err?.error?.mensaje || 'Error al iniciar sesión con Google';
+        this.error.set(msg);
+        this.cargando.set(false);
+      },
+    });
+  }
 
   submit() {
     if (this.form.invalid) return;

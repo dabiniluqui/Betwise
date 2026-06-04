@@ -35,6 +35,12 @@ export class AuthService {
     );
   }
 
+  loginConGoogle(credential: string) {
+    return this.http.post<any>(`${API}/auth/google`, { credential }).pipe(
+      tap((res) => this.guardarSesion(res))
+    );
+  }
+
   logout() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USUARIO_KEY);

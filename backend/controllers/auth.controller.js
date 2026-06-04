@@ -7,6 +7,9 @@
 const bcrypt   = require('bcrypt');
 const jwt      = require('jsonwebtoken');
 const supabase = require('../config/supabase');
+const { OAuth2Client } = require('google-auth-library');
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const SALT_ROUNDS = 10; // Clase 10: encriptación con bcrypt
 
@@ -111,4 +114,53 @@ async function me(req, res, next) {
   }
 }
 
-module.exports = { register, login, me };
+// ── POST /api/v1/auth/google ─────────────────────────────────
+async function googleAuth(req, res, next) {
+  try {
+    const { credential } = req.body;
+    if (!credential) {
+      return res.status(400).json({ ok: false, mensaje: 'Token de Google requerido' });
+    }
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const { sub: googleId, email, name: nombre } = ticket.getPayload();
+
+    let { data: usuario } = await supabase
+      .from('usuarios')
+      .select('id, email, nombre, google_id')
+      .eq('email', email)
+      .single();
+
+    if (!usuario) {
+      const { data: nuevo, error } = await supabase
+        .from('usuarios')
+        .insert({ email, nombre: nombre || email.split('@')[0], google_id: googleId })
+        .select('id, email, nombre')
+        .single();
+      if (error) throw error;
+      usuario = nuevo;
+    } else if (!usuario.google_id) {
+      await supabase.from('usuarios').update({ google_id: googleId }).eq('id', usuario.id);
+    }
+
+    const token = jwt.sign(
+      { id: usuario.id, email: usuario.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      ok: true,
+      mensaje: 'Sesión iniciada con Google',
+      token,
+      usuario: { id: usuario.id, email: usuario.email, nombre: usuario.nombre },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = { register, login, me, googleAuth };
