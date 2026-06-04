@@ -11,11 +11,12 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AuthService }     from '../../services/auth.service';
 import { FinanzasService } from '../../services/finanzas.service';
 import { ResultadoFinanciero } from '../../core/models/usuario.model';
+import { CentrosAyudaComponent } from '../../components/centros-ayuda/centros-ayuda.component';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, CentrosAyudaComponent],
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.css'],
 })
