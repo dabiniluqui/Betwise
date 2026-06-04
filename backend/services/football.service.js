@@ -124,7 +124,10 @@ async function obtenerEstadisticasPartido(fixtureId) {
   });
 
   const resultado = data.response || [];
-  guardarEnCache(clave, resultado);
+  if (data.errors && Object.keys(data.errors).length > 0) {
+    console.warn('[API] /fixtures/statistics error:', JSON.stringify(data.errors));
+  }
+  if (resultado.length > 0) guardarEnCache(clave, resultado);
   return resultado;
 }
 

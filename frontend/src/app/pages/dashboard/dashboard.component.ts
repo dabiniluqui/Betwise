@@ -1,6 +1,6 @@
 // ============================================================
 // pages/dashboard/dashboard.component.ts
-// Panel del usuario: favoritos + Pulse Score en vivo
+// Panel del usuario: partidos en vivo + favoritos
 // ============================================================
 
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
@@ -25,13 +25,13 @@ import { Partido }          from '../../core/models/partido.model';
             Mi Panel · {{ authService.usuario()?.nombre || 'Usuario' }}
           </h1>
           <p class="dash-header__subtitulo">
-            Partidos en vivo con Pulse Score ⚡ · Socket conectado
+            Seguí tus partidos favoritos en tiempo real
           </p>
         </header>
 
-        <!-- Partidos en vivo con Pulse -->
+        <!-- Partidos en vivo -->
         <section class="dash-seccion">
-          <h2 class="dash-seccion__titulo">⚡ Partidos en vivo — Pulse Score</h2>
+          <h2 class="dash-seccion__titulo">🔴 Partidos en vivo</h2>
 
           <div class="estado-carga" *ngIf="cargando()">
             <div class="spinner"></div><p>Cargando partidos...</p>
@@ -75,10 +75,6 @@ import { Partido }          from '../../core/models/partido.model';
               </div>
 
               <div class="partido-card__acciones">
-                <button class="btn btn--ghost btn--pequeño"
-                        (click)="suscribirPulse(p)">
-                  Ver Pulse ⚡
-                </button>
                 <button class="btn btn--ghost btn--pequeño"
                         (click)="agregarFavorito(p)">
                   ☆ Favorito
@@ -126,23 +122,14 @@ import { Partido }          from '../../core/models/partido.model';
       border-radius: 14px; padding: 16px 20px;
     }
     .partido-card__liga { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-texto-muy-suave); }
-    .partido-card__encuentro {
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    }
-    .partido-card__equipo {
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-      flex: 1; text-align: center;
-    }
+    .partido-card__encuentro { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .partido-card__equipo { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; text-align: center; }
     .partido-card__escudo { width: 48px; height: 48px; object-fit: contain; }
     .partido-card__nombre { font-size: 0.85rem; font-weight: 600; color: var(--color-texto); }
     .partido-card__centro { display: flex; flex-direction: column; align-items: center; gap: 8px; }
     .partido-card__score { font-family: var(--fuente-display); font-size: 1.8rem; font-weight: 800; color: var(--color-texto); }
     .partido-card__acciones { display: flex; gap: 8px; justify-content: flex-end; }
-    .favorito-item {
-      display: flex; justify-content: space-between; align-items: center;
-      background: var(--color-superficie); border: 1px solid var(--color-borde);
-      border-radius: 12px; padding: 14px 18px;
-    }
+    .favorito-item { display: flex; justify-content: space-between; align-items: center; background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 12px; padding: 14px 18px; }
     .favorito-item__info  { display: flex; flex-direction: column; gap: 3px; }
     .favorito-item__liga  { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-texto-muy-suave); }
     .favorito-item__partido { font-size: 0.9rem; font-weight: 600; color: var(--color-texto); }
@@ -162,9 +149,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private partSvc   = inject(PartidosService);
   private socketSvc = inject(SocketService);
 
-  partidos  = signal<Partido[]>([]);
-  favoritos = signal<Favorito[]>([]);
-  cargando  = signal(true);
+  partidos      = signal<Partido[]>([]);
+  favoritos     = signal<Favorito[]>([]);
+  cargando      = signal(true);
   errorConexion = signal<string | null>(null);
 
   private subs = new Subscription();
@@ -197,10 +184,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.partidos.set(data.partidos as any);
     });
     this.subs.add(sub);
-  }
-
-  suscribirPulse(partido: Partido): void {
-    this.socketSvc.suscribirPartido(partido.id);
   }
 
   agregarFavorito(partido: Partido): void {
