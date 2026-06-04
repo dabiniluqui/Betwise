@@ -8,6 +8,7 @@ import { CommonModule }    from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FinanzasService } from '../../services/finanzas.service';
+import { ChatbotComponent } from '../../components/chatbot/chatbot.component';
 import {
   PerfilFinanciero,
   ResultadoFinanciero,
@@ -41,7 +42,7 @@ const EJEMPLOS: Record<string, Partial<PerfilFinanciero>> = {
 @Component({
   selector: 'app-salud-financiera',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, ChatbotComponent],
   templateUrl: './salud-financiera.component.html',
   styleUrls: ['./salud-financiera.component.css'],
 })

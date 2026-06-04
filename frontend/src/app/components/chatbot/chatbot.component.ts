@@ -54,7 +54,7 @@ REGLAS:
       (click)="toggleChat()"
       [attr.aria-label]="abierto() ? 'Cerrar chat' : 'Abrir asistente financiero'"
       title="Asistente Financiero">
-      <span *ngIf="!abierto()">💰</span>
+      <span *ngIf="!abierto()" class="chat-fab__label">💰 FinBot</span>
       <span *ngIf="abierto()">✕</span>
     </button>
 
@@ -111,24 +111,33 @@ REGLAS:
       position: fixed;
       bottom: 28px;
       right: 28px;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #1a4a7a, #3498db);
+      height: 48px;
+      min-width: 48px;
+      padding: 0 20px;
+      border-radius: 30px;
+      background: linear-gradient(135deg, #00b87a, #00e5a0);
       border: none;
       cursor: pointer;
-      font-size: 1.7rem;
+      font-size: 1rem;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 20px rgba(46, 204, 113, 0.45);
+      gap: 6px;
+      box-shadow: 0 4px 20px rgba(0, 229, 160, 0.45);
       z-index: 1000;
       transition: transform 0.2s, box-shadow 0.2s;
-      color: #fff;
+      color: #0a2e1c;
+      white-space: nowrap;
     }
     .chat-fab:hover {
-      transform: scale(1.1);
-      box-shadow: 0 6px 28px rgba(46, 204, 113, 0.6);
+      transform: scale(1.05);
+      box-shadow: 0 6px 28px rgba(0, 229, 160, 0.6);
+    }
+    .chat-fab__label {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
     }
 
     .chat-panel {
@@ -161,13 +170,13 @@ REGLAS:
       align-items: center;
       gap: 10px;
       padding: 14px 18px;
-      background: linear-gradient(135deg, #1a4a7a, #0f3460);
+      background: linear-gradient(135deg, #00916a, #00c48a);
       border-radius: 16px 16px 0 0;
     }
     .chat-header__icono { font-size: 1.5rem; }
     .chat-header__info { display: flex; flex-direction: column; }
     .chat-header__info strong { color: #fff; font-size: 0.95rem; }
-    .chat-header__info small { color: #a8c8e6; font-size: 0.75rem; }
+    .chat-header__info small { color: #c8f5e6; font-size: 0.75rem; }
 
     .chat-mensajes {
       flex: 1;
@@ -211,7 +220,7 @@ REGLAS:
     .chat-cargando span {
       width: 7px;
       height: 7px;
-      background: #3498db;
+      background: #00e5a0;
       border-radius: 50%;
       display: inline-block;
       animation: bounce 1.2s infinite ease-in-out;
@@ -241,15 +250,15 @@ REGLAS:
       outline: none;
       transition: border-color 0.2s;
     }
-    .chat-input:focus { border-color: #3498db; }
+    .chat-input:focus { border-color: #00e5a0; }
     .chat-input::placeholder { color: #4a6a7a; }
     .chat-input:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .chat-enviar {
-      background: linear-gradient(135deg, #1a4a7a, #3498db);
+      background: linear-gradient(135deg, #00916a, #00e5a0);
       border: none;
       border-radius: 10px;
-      color: #fff;
+      color: #0a2e1c;
       font-size: 1.1rem;
       padding: 0 14px;
       cursor: pointer;
@@ -291,25 +300,25 @@ export class ChatbotComponent implements AfterViewChecked {
     this.cargando.set(true);
 
     const historial = this.mensajes().slice(-10).map(m => ({
-      role: m.rol === 'usuario' ? 'user' : 'model',
-      parts: [{ text: m.texto }],
+      role: m.rol === 'usuario' ? 'user' : 'assistant',
+      content: m.texto,
     }));
 
     const body = {
-      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents: historial,
-      generationConfig: { temperature: 0.7, maxOutputTokens: 800 },
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...historial],
+      temperature: 0.7,
+      max_tokens: 800,
     };
 
     this.http.post<any>(CHATBOT_URL, body).subscribe({
       next: (res) => {
-        const respuesta = res?.candidates?.[0]?.content?.parts?.[0]?.text ?? 'No pude obtener respuesta. Intentá de nuevo.';
+        const respuesta = res?.choices?.[0]?.message?.content ?? 'No pude obtener respuesta. Intentá de nuevo.';
         this.mensajes.update(msgs => [...msgs, { rol: 'asistente', texto: respuesta }]);
         this.cargando.set(false);
       },
       error: (err) => {
         console.error('FinBot error:', err);
-        this.mensajes.update(msgs => [...msgs, { rol: 'asistente', texto: 'Hubo un error al conectar con Gemini. Revisá la consola para más detalles.' }]);
+        this.mensajes.update(msgs => [...msgs, { rol: 'asistente', texto: 'Hubo un error al conectar con el asistente. Revisá la consola para más detalles.' }]);
         this.cargando.set(false);
       },
     });

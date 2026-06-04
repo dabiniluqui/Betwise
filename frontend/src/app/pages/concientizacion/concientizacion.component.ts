@@ -8,11 +8,12 @@ import { CommonModule }      from '@angular/common';
 import { Router }            from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AuthService }  from '../../services/auth.service';
+import { CuestionarioRiesgoComponent } from '../../components/cuestionario-riesgo/cuestionario-riesgo.component';
 
 @Component({
   selector: 'app-concientizacion',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CuestionarioRiesgoComponent],
   template: `
     <div class="conc-wrapper">
 
@@ -28,6 +29,9 @@ import { AuthService }  from '../../services/auth.service';
       </section>
 
       <div class="conc-contenedor conc-contenido">
+
+        <!-- ── CUESTIONARIO DE RIESGO ────────────────────── -->
+        <app-cuestionario-riesgo />
 
         <!-- ── VIDEO 1 ────────────────────────────────────── -->
         <div class="video-wrapper">

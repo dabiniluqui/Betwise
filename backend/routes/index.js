@@ -12,6 +12,7 @@ const finanzasRoutes = require('./finanzas.routes');
 const favoritosRoutes = require('./favoritos.routes');
 const scrapingRoutes = require('./scraping.routes');
 const chatbotRoutes  = require('./chatbot.routes');
+const futbotRoutes   = require('./futbot.routes');
 
 const router = Router();
 
@@ -21,5 +22,6 @@ router.use('/finanzas', finanzasRoutes);
 router.use('/favoritos', favoritosRoutes);
 router.use('/scraping', scrapingRoutes);
 router.use('/chatbot',  chatbotRoutes);
+router.use('/futbot',   futbotRoutes);
 
 module.exports = router;

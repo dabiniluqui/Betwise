@@ -11,11 +11,12 @@ import { PartidosService }  from '../../services/partidos.service';
 import { SocketService }    from '../../services/socket.service';
 import { AuthService }      from '../../services/auth.service';
 import { Partido }          from '../../core/models/partido.model';
+import { FutbotComponent }  from '../../components/futbot/futbot.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FutbotComponent],
   template: `
     <div class="dash-wrapper">
       <div class="contenedor">
@@ -110,6 +111,8 @@ import { Partido }          from '../../core/models/partido.model';
 
       </div>
     </div>
+
+    <app-futbot [partidos]="partidos()" />
   `,
   styles: [`
     .dash-wrapper { padding: 60px 0; background: var(--color-fondo); min-height: 100vh; }

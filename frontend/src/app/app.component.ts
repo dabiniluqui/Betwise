@@ -7,12 +7,11 @@ import { Component, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService }  from './services/auth.service';
-import { ChatbotComponent } from './components/chatbot/chatbot.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, ChatbotComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
   template: `
     <header class="navbar">
       <div class="navbar__contenedor">
@@ -43,8 +42,6 @@ import { ChatbotComponent } from './components/chatbot/chatbot.component';
     <main>
       <router-outlet />
     </main>
-
-    <app-chatbot />
 
     <footer class="footer">
       <div class="footer__contenedor">
